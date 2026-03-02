@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}Despesas - FinanceTracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0"><i class="bi bi-arrow-down-circle me-2"></i>Despesas / Contas</h4>
+    <div>
+        <a href="{{ url_for('expenses.export_csv') }}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-download me-1"></i> Exportar CSV
+        </a>
+        <a href="{{ url_for('expenses.add') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Nova Despesa
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="mb-3">
+    <div class="btn-group btn-group-sm">
+        <a href="?status=all" class="btn {{ 'btn-primary' if filter_status == 'all' else 'btn-outline-secondary' }}">Todas</a>
+        <a href="?status=unpaid" class="btn {{ 'btn-danger' if filter_status == 'unpaid' else 'btn-outline-secondary' }}">Pendentes</a>
+        <a href="?status=paid" class="btn {{ 'btn-success' if filter_status == 'paid' else 'btn-outline-secondary' }}">Pagas</a>
+    </div>
+</div>
+
+<div class="card border-0">
+    <div class="card-body p-0">
+        {% if expenses.items %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Vencimento</th>
+                        <th>Descricao</th>
+                        <th>Categoria</th>
+                        <th>Destinatario</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end">Valor</th>
+                        <th class="text-center">Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses.items %}
+                    <tr>
+                        <td>{{ expense.due_date.strftime('%d/%m/%Y') if expense.due_date else '-' }}</td>
+                        <td>{{ expense.description or '-' }}</td>
+                        <td>
+                            {% if expense.category %}
+                            <span class="badge" style="background-color: {{ expense.category.color or '#6c757d' }}">
+                                <i class="{{ expense.category.icon or 'bi bi-tag' }} me-1"></i>{{ expense.category.name }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ expense.payee or '-' }}</td>
+                        <td class="text-center">
+                            <form method="POST" action="{{ url_for('expenses.toggle_paid', id=expense.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                {% if expense.is_paid %}
+                                <button type="submit" class="btn btn-sm btn-success" title="Marcar como pendente">
+                                    <i class="bi bi-check-circle"></i> Paga
+                                </button>
+                                {% else %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Marcar como paga">
+                                    <i class="bi bi-clock"></i> Pendente
+                                </button>
+                                {% endif %}
+                            </form>
+                        </td>
+                        <td class="text-end text-danger fw-medium">R$ {{ "%.2f"|format(expense.amount) }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('expenses.edit', id=expense.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('expenses.delete', id=expense.id) }}" class="d-inline" onsubmit="return confirm('Remover esta despesa?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if expenses.pages > 1 %}
+        <div class="card-footer bg-transparent">
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    {% if expenses.has_prev %}
+                    <li class="page-item"><a class="page-link" href="?page={{ expenses.prev_num }}&status={{ filter_status }}">Anterior</a></li>
+                    {% endif %}
+                    {% for p in expenses.iter_pages() %}
+                        {% if p %}
+                        <li class="page-item {{ 'active' if p == expenses.page }}"><a class="page-link" href="?page={{ p }}&status={{ filter_status }}">{{ p }}</a></li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if expenses.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ expenses.next_num }}&status={{ filter_status }}">Proximo</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-inbox display-4"></i>
+            <p class="mt-2">Nenhuma despesa cadastrada ainda.</p>
+            <a href="{{ url_for('expenses.add') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> Adicionar Despesa
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

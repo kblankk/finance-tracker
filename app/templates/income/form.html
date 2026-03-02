@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - FinanceTracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{{ url_for('income.list') }}" class="btn btn-sm btn-outline-secondary me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h4 class="mb-0">{{ title }}</h4>
+        </div>
+
+        <div class="card border-0">
+            <div class="card-body p-4">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.amount.label.text }}</label>
+                            {{ form.amount(class="form-control" + (" is-invalid" if form.amount.errors else ""), placeholder="0.00") }}
+                            {% for error in form.amount.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.date.label.text }}</label>
+                            {{ form.date(class="form-control" + (" is-invalid" if form.date.errors else ""), type="date") }}
+                            {% for error in form.date.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.category_id.label.text }}</label>
+                            {{ form.category_id(class="form-select" + (" is-invalid" if form.category_id.errors else "")) }}
+                            {% for error in form.category_id.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.source.label.text }}</label>
+                            {{ form.source(class="form-control", placeholder="Ex: Empresa X") }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">{{ form.description.label.text }}</label>
+                            {{ form.description(class="form-control", placeholder="Descricao opcional") }}
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check mt-2">
+                                {{ form.is_recurring(class="form-check-input") }}
+                                {{ form.is_recurring.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="recurrenceField">
+                            <label class="form-label">{{ form.recurrence.label.text }}</label>
+                            {{ form.recurrence(class="form-select") }}
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i> Salvar
+                        </button>
+                        <a href="{{ url_for('income.list') }}" class="btn btn-outline-secondary ms-2">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const recurring = document.getElementById('{{ form.is_recurring.id }}');
+const field = document.getElementById('recurrenceField');
+field.style.display = recurring.checked ? 'block' : 'none';
+recurring.addEventListener('change', () => {
+    field.style.display = recurring.checked ? 'block' : 'none';
+});
+</script>
+{% endblock %}

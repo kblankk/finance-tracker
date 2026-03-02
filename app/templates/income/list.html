@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Receitas - FinanceTracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0"><i class="bi bi-arrow-up-circle me-2"></i>Receitas</h4>
+    <div>
+        <a href="{{ url_for('income.export_csv') }}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-download me-1"></i> Exportar CSV
+        </a>
+        <a href="{{ url_for('income.add') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Nova Receita
+        </a>
+    </div>
+</div>
+
+<div class="card border-0">
+    <div class="card-body p-0">
+        {% if incomes.items %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descricao</th>
+                        <th>Categoria</th>
+                        <th>Fonte</th>
+                        <th class="text-end">Valor</th>
+                        <th class="text-center">Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for income in incomes.items %}
+                    <tr>
+                        <td>{{ income.date.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ income.description or '-' }}</td>
+                        <td>
+                            {% if income.category %}
+                            <span class="badge" style="background-color: {{ income.category.color or '#6c757d' }}">
+                                <i class="{{ income.category.icon or 'bi bi-tag' }} me-1"></i>{{ income.category.name }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ income.source or '-' }}</td>
+                        <td class="text-end text-success fw-medium">R$ {{ "%.2f"|format(income.amount) }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('income.edit', id=income.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('income.delete', id=income.id) }}" class="d-inline" onsubmit="return confirm('Remover esta receita?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if incomes.pages > 1 %}
+        <div class="card-footer bg-transparent">
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    {% if incomes.has_prev %}
+                    <li class="page-item"><a class="page-link" href="?page={{ incomes.prev_num }}">Anterior</a></li>
+                    {% endif %}
+                    {% for p in incomes.iter_pages() %}
+                        {% if p %}
+                        <li class="page-item {{ 'active' if p == incomes.page }}"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if incomes.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ incomes.next_num }}">Proximo</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-inbox display-4"></i>
+            <p class="mt-2">Nenhuma receita cadastrada ainda.</p>
+            <a href="{{ url_for('income.add') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> Adicionar Receita
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

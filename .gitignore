@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.db
+.env
+venv/
+env/
+instance/
+*.egg-info/
+dist/
+build/
+.eggs/
+migrations/versions/__pycache__/

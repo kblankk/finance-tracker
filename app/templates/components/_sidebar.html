@@ -1,0 +1,53 @@
+<nav class="sidebar d-flex flex-column p-3" id="sidebar">
+    <a href="{{ url_for('main.dashboard') }}" class="d-flex align-items-center mb-4 text-decoration-none">
+        <i class="bi bi-wallet2 fs-3 text-primary me-2"></i>
+        <span class="fs-5 fw-bold text-white">FinanceTracker</span>
+    </a>
+
+    <ul class="nav nav-pills flex-column gap-1">
+        <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.endpoint == 'main.dashboard' }}" href="{{ url_for('main.dashboard') }}">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.endpoint and 'income' in request.endpoint }}" href="{{ url_for('income.list') }}">
+                <i class="bi bi-arrow-up-circle me-2"></i> Receitas
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.endpoint and 'expenses' in request.endpoint }}" href="{{ url_for('expenses.list') }}">
+                <i class="bi bi-arrow-down-circle me-2"></i> Despesas
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.endpoint and 'reminders' in request.endpoint }}" href="{{ url_for('reminders.list') }}">
+                <i class="bi bi-bell me-2"></i> Lembretes
+                {% if unread_count is defined and unread_count > 0 %}
+                <span class="badge bg-danger ms-1">{{ unread_count }}</span>
+                {% endif %}
+            </a>
+        </li>
+        {% if current_user.is_admin %}
+        <li class="nav-item mt-3">
+            <small class="text-muted text-uppercase px-3">Admin</small>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.endpoint and 'admin' in request.endpoint }}" href="{{ url_for('admin.users') }}">
+                <i class="bi bi-people me-2"></i> Usuarios
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+
+    <div class="mt-auto">
+        <hr class="border-secondary">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-person-circle fs-4 me-2 text-secondary"></i>
+            <div class="flex-grow-1">
+                <small class="text-white d-block">{{ current_user.username }}</small>
+                <small class="text-muted">{{ current_user.role }}</small>
+            </div>
+        </div>
+    </div>
+</nav>

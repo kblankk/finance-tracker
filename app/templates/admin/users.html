@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Gerenciar Usuarios - FinanceTracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0"><i class="bi bi-people me-2"></i>Gerenciar Usuarios</h4>
+</div>
+
+<div class="card border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Funcao</th>
+                        <th class="text-center">Status</th>
+                        <th>Criado em</th>
+                        <th class="text-center">Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <i class="bi bi-person-circle me-1"></i>
+                            {{ user.username }}
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if user.is_admin %}
+                            <span class="badge bg-primary">Admin</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Usuario</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if user.is_approved and user.is_active %}
+                            <span class="badge bg-success">Ativo</span>
+                            {% elif user.is_approved and not user.is_active %}
+                            <span class="badge bg-warning">Desativado</span>
+                            {% else %}
+                            <span class="badge bg-danger">Pendente</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.created_at.strftime('%d/%m/%Y') }}</td>
+                        <td class="text-center">
+                            {% if not user.is_admin %}
+                                {% if not user.is_approved %}
+                                <form method="POST" action="{{ url_for('admin.approve', id=user.id) }}" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-success" title="Aprovar">
+                                        <i class="bi bi-check-lg"></i> Aprovar
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <form method="POST" action="{{ url_for('admin.toggle_active', id=user.id) }}" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    {% if user.is_active %}
+                                    <button type="submit" class="btn btn-sm btn-outline-warning" title="Desativar">
+                                        <i class="bi bi-pause-circle"></i>
+                                    </button>
+                                    {% else %}
+                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Ativar">
+                                        <i class="bi bi-play-circle"></i>
+                                    </button>
+                                    {% endif %}
+                                </form>
+                                <form method="POST" action="{{ url_for('admin.reject', id=user.id) }}" class="d-inline" onsubmit="return confirm('Remover usuario {{ user.username }}?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

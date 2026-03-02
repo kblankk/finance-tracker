@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Lembretes - FinanceTracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0"><i class="bi bi-bell me-2"></i>Lembretes</h4>
+    <div>
+        <form method="POST" action="{{ url_for('reminders.generate') }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-arrow-repeat me-1"></i> Gerar Lembretes
+            </button>
+        </form>
+        {% if reminders %}
+        <form method="POST" action="{{ url_for('reminders.mark_all_read') }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-check-all me-1"></i> Marcar Todos como Lidos
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+{% if reminders %}
+<div class="row g-3">
+    {% for reminder in reminders %}
+    <div class="col-md-6">
+        <div class="card border-0 {{ '' if reminder.is_read else 'border-start border-primary border-3' }}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1 {{ 'text-muted' if reminder.is_read }}">
+                            {% if not reminder.is_read %}
+                            <i class="bi bi-circle-fill text-primary me-1" style="font-size: 0.5rem; vertical-align: middle;"></i>
+                            {% endif %}
+                            {{ reminder.title }}
+                        </h6>
+                        <p class="text-muted mb-1 small">{{ reminder.message or '' }}</p>
+                        <small class="text-muted">{{ reminder.remind_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                    </div>
+                    {% if not reminder.is_read %}
+                    <form method="POST" action="{{ url_for('reminders.mark_read', id=reminder.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-outline-primary" title="Marcar como lido">
+                            <i class="bi bi-check"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card border-0">
+    <div class="card-body text-center text-muted py-5">
+        <i class="bi bi-bell-slash display-4"></i>
+        <p class="mt-2">Nenhum lembrete no momento.</p>
+        <p class="small">Clique em "Gerar Lembretes" para verificar contas proximas ao vencimento.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

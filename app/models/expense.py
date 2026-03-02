@@ -1,0 +1,25 @@
+from datetime import datetime
+from app.extensions import db
+
+
+class Expense(db.Model):
+    __tablename__ = 'expenses'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
+    amount = db.Column(db.Numeric(12, 2), nullable=False)
+    description = db.Column(db.String(256), nullable=True)
+    payee = db.Column(db.String(128), nullable=True)
+    due_date = db.Column(db.Date, nullable=True, index=True)
+    paid_date = db.Column(db.Date, nullable=True)
+    is_paid = db.Column(db.Boolean, default=False)
+    is_recurring = db.Column(db.Boolean, default=False)
+    recurrence = db.Column(db.String(20), nullable=True)
+    priority = db.Column(db.String(10), default='normal')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    reminders = db.relationship('Reminder', backref='expense', lazy='dynamic', cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f'<Expense R${self.amount} - {self.description}>'

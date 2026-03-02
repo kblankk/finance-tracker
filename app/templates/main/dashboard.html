@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - FinanceTracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h4>
+    <small class="text-muted">Mes atual</small>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card border-0 h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">Receitas</p>
+                        <h4 class="text-income mb-0">R$ {{ "%.2f"|format(total_income) }}</h4>
+                    </div>
+                    <div class="stat-icon bg-success bg-opacity-10 text-success">
+                        <i class="bi bi-arrow-up-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card border-0 h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">Despesas</p>
+                        <h4 class="text-expense mb-0">R$ {{ "%.2f"|format(total_expenses) }}</h4>
+                    </div>
+                    <div class="stat-icon bg-danger bg-opacity-10 text-danger">
+                        <i class="bi bi-arrow-down-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card border-0 h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">Saldo</p>
+                        <h4 class="{{ 'text-income' if balance >= 0 else 'text-expense' }} mb-0">
+                            R$ {{ "%.2f"|format(balance) }}
+                        </h4>
+                    </div>
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card border-0 h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">Contas Pendentes</p>
+                        <h4 class="text-warning mb-0">{{ pending_bills }}</h4>
+                    </div>
+                    <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row g-3 mb-4">
+    <div class="col-md-8">
+        <div class="card border-0 h-100">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i>Receitas vs Despesas (6 meses)</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="trendChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 h-100">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Despesas por Categoria</h6>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="expensePieChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Bills & Recent Transactions -->
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card border-0 h-100">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Proximas Contas</h6>
+                <a href="{{ url_for('expenses.list', status='unpaid') }}" class="btn btn-sm btn-outline-primary">Ver todas</a>
+            </div>
+            <div class="card-body p-0">
+                {% if upcoming %}
+                <div class="list-group list-group-flush">
+                    {% for bill in upcoming %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fw-medium">{{ bill.description or bill.payee or 'Sem descricao' }}</span>
+                            <br><small class="text-muted">Vence: {{ bill.due_date.strftime('%d/%m/%Y') }}</small>
+                        </div>
+                        <span class="badge bg-danger">R$ {{ "%.2f"|format(bill.amount) }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-check-circle display-6"></i>
+                    <p class="mt-2 mb-0">Nenhuma conta proxima!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 h-100">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Transacoes Recentes</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for income in recent_incomes[:3] %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-arrow-up-circle text-success me-1"></i>
+                            <span>{{ income.description or income.source or 'Receita' }}</span>
+                            <br><small class="text-muted">{{ income.date.strftime('%d/%m/%Y') }}</small>
+                        </div>
+                        <span class="text-success fw-medium">+R$ {{ "%.2f"|format(income.amount) }}</span>
+                    </div>
+                    {% endfor %}
+                    {% for expense in recent_expenses[:3] %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-arrow-down-circle text-danger me-1"></i>
+                            <span>{{ expense.description or expense.payee or 'Despesa' }}</span>
+                            <br><small class="text-muted">{{ expense.due_date.strftime('%d/%m/%Y') if expense.due_date else '' }}</small>
+                        </div>
+                        <span class="text-danger fw-medium">-R$ {{ "%.2f"|format(expense.amount) }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

@@ -30,7 +30,7 @@
                     <div class="progress-bar" style="width: {{ goal.progress_pct }}%; background-color: {{ goal.color }}"></div>
                 </div>
                 <div class="d-flex justify-content-between small text-muted mb-2">
-                    <span>R$ {{ "%.2f"|format(goal.current_amount or 0) }} / R$ {{ "%.2f"|format(goal.target_amount) }}</span>
+                    <span class="savings-value">R$ {{ "%.2f"|format(goal.current_amount or 0) }} / R$ {{ "%.2f"|format(goal.target_amount) }}</span>
                     <span>{{ "%.0f"|format(goal.progress_pct) }}%</span>
                 </div>
                 {% if goal.deadline %}

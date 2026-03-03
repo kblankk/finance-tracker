@@ -4,10 +4,20 @@
     </button>
 
     <div class="ms-auto d-flex align-items-center gap-3">
+        <!-- Privacy toggle -->
+        <button class="btn btn-sm btn-outline-secondary" id="privacyToggle" title="Esconder valores">
+            <i class="bi bi-eye" id="privacyIcon"></i>
+        </button>
+
         <!-- Theme toggle -->
         <button class="btn btn-sm btn-outline-secondary" id="themeToggle" title="Alternar tema">
             <i class="bi bi-moon-stars" id="themeIcon"></i>
         </button>
+
+        <!-- Profile -->
+        <a href="{{ url_for('profile.settings') }}" class="btn btn-sm btn-outline-secondary" title="Meu Perfil">
+            <i class="bi bi-person-gear"></i>
+        </a>
 
         <!-- Notifications -->
         <a href="{{ url_for('reminders.list') }}" class="btn btn-sm btn-outline-secondary position-relative">
@@ -64,6 +74,26 @@ const backdrop = document.getElementById('sidebarBackdrop');
 if (backdrop) {
     backdrop.addEventListener('click', toggleSidebar);
 }
+
+// Privacy toggle - esconder valores
+const privacyToggle = document.getElementById('privacyToggle');
+const privacyIcon = document.getElementById('privacyIcon');
+
+function applyPrivacy(hidden) {
+    document.body.classList.toggle('privacy-mode', hidden);
+    privacyIcon.className = hidden ? 'bi bi-eye-slash' : 'bi bi-eye';
+    privacyToggle.title = hidden ? 'Mostrar valores' : 'Esconder valores';
+}
+
+const savedPrivacy = localStorage.getItem('ft-privacy') === 'true';
+applyPrivacy(savedPrivacy);
+
+privacyToggle.addEventListener('click', () => {
+    const next = !document.body.classList.contains('privacy-mode');
+    localStorage.setItem('ft-privacy', next);
+    applyPrivacy(next);
+    window.dispatchEvent(new CustomEvent('ft-privacy-change', { detail: { hidden: next } }));
+});
 
 // Notification badge
 fetch('{{ url_for("reminders.api_unread_count") }}')

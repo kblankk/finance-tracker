@@ -20,34 +20,83 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="d-flex gap-1">
+            <div class="d-flex gap-1 flex-wrap justify-content-end">
                 <a href="{{ url_for('savings.contribute', id=goal.id) }}" class="btn btn-sm btn-success"><i class="bi bi-plus-lg me-1"></i>Depositar</a>
-                <a href="{{ url_for('savings.edit', id=goal.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
-                <form method="POST" action="{{ url_for('savings.delete', id=goal.id) }}" class="d-inline" onsubmit="return confirm('Remover esta meta e todas as contribuicoes?')">
+                <a href="{{ url_for('savings.withdraw', id=goal.id) }}" class="btn btn-sm btn-warning"><i class="bi bi-cash-stack me-1"></i>Sacar</a>
+                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#editValueForm"><i class="bi bi-pencil me-1"></i>Editar Valor</button>
+                <a href="{{ url_for('savings.edit', id=goal.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-gear"></i></a>
+                <form method="POST" action="{{ url_for('savings.delete', id=goal.id) }}" class="d-inline" onsubmit="return confirm('Remover esta meta e todos os registros?')">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                 </form>
             </div>
         </div>
+
+        <!-- Editar valor inline (collapse) -->
+        <div class="collapse mb-3" id="editValueForm">
+            <div class="card card-body bg-opacity-10">
+                <form method="POST" action="{{ url_for('savings.edit_value', id=goal.id) }}" class="d-flex align-items-end gap-2">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="flex-grow-1">
+                        <label class="form-label small mb-1">Novo valor do cofrinho (R$)</label>
+                        <input type="number" name="new_value" step="0.01" min="0" class="form-control form-control-sm"
+                               value="{{ '%.2f'|format(goal.current_amount or 0) }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-check-lg me-1"></i>Salvar</button>
+                </form>
+                <small class="text-muted mt-1"><i class="bi bi-info-circle me-1"></i>Editar o valor nao afeta a receita.</small>
+            </div>
+        </div>
+
         <div class="progress mb-2" style="height: 10px;">
             <div class="progress-bar" style="width: {{ goal.progress_pct }}%; background-color: {{ goal.color }}"></div>
         </div>
         <div class="d-flex justify-content-between">
-            <span>R$ {{ "%.2f"|format(goal.current_amount or 0) }} de R$ {{ "%.2f"|format(goal.target_amount) }}</span>
+            <span class="savings-value">R$ {{ "%.2f"|format(goal.current_amount or 0) }} de R$ {{ "%.2f"|format(goal.target_amount) }}</span>
             <span class="fw-bold" style="color: {{ goal.color }}">{{ "%.0f"|format(goal.progress_pct) }}%</span>
         </div>
     </div>
 </div>
 
-<h6 class="mb-3"><i class="bi bi-list-ul me-2"></i>Contribuicoes</h6>
+<h6 class="mb-3"><i class="bi bi-list-ul me-2"></i>Historico</h6>
 <div class="card border-0">
     <div class="card-body p-0">
         {% if contributions.items %}
-        <div class="table-responsive">
+        <!-- Mobile: Card layout -->
+        <div class="d-md-none p-2">
+            {% for c in contributions.items %}
+            <div class="d-flex justify-content-between align-items-center py-2 {{ 'border-bottom' if not loop.last }}">
+                <div class="d-flex align-items-center gap-2">
+                    {% if c.type == 'withdrawal' %}
+                    <i class="bi bi-arrow-up-circle text-warning"></i>
+                    {% else %}
+                    <i class="bi bi-arrow-down-circle text-success"></i>
+                    {% endif %}
+                    <div>
+                        <div class="fw-medium small">{{ c.description or ('Saque' if c.type == 'withdrawal' else 'Deposito') }}</div>
+                        <small class="text-muted">{{ c.date.strftime('%d/%m/%Y') }}</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-medium {{ 'text-warning' if c.type == 'withdrawal' else 'text-success' }}">
+                        {{ '-' if c.type == 'withdrawal' else '+' }}R$ {{ "%.2f"|format(c.amount) }}
+                    </span>
+                    <form method="POST" action="{{ url_for('savings.delete_contribution', id=c.id) }}" class="d-inline" onsubmit="return confirm('Remover este registro?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Desktop: Table layout -->
+        <div class="table-responsive d-none d-md-block">
             <table class="table table-hover mb-0">
                 <thead>
                     <tr>
                         <th>Data</th>
+                        <th>Tipo</th>
                         <th>Descricao</th>
                         <th class="text-end">Valor</th>
                         <th class="text-center">Acoes</th>
@@ -57,10 +106,19 @@
                     {% for c in contributions.items %}
                     <tr>
                         <td>{{ c.date.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            {% if c.type == 'withdrawal' %}
+                            <span class="badge bg-warning text-dark"><i class="bi bi-arrow-up-circle me-1"></i>Saque</span>
+                            {% else %}
+                            <span class="badge bg-success"><i class="bi bi-arrow-down-circle me-1"></i>Deposito</span>
+                            {% endif %}
+                        </td>
                         <td>{{ c.description or '-' }}</td>
-                        <td class="text-end text-success fw-medium">R$ {{ "%.2f"|format(c.amount) }}</td>
+                        <td class="text-end fw-medium {{ 'text-warning' if c.type == 'withdrawal' else 'text-success' }}">
+                            {{ '-' if c.type == 'withdrawal' else '+' }}R$ {{ "%.2f"|format(c.amount) }}
+                        </td>
                         <td class="text-center">
-                            <form method="POST" action="{{ url_for('savings.delete_contribution', id=c.id) }}" class="d-inline" onsubmit="return confirm('Remover esta contribuicao?')">
+                            <form method="POST" action="{{ url_for('savings.delete_contribution', id=c.id) }}" class="d-inline" onsubmit="return confirm('Remover este registro?')">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                             </form>
@@ -93,7 +151,7 @@
         {% endif %}
         {% else %}
         <div class="text-center text-muted py-4">
-            <p class="mb-0">Nenhuma contribuicao ainda.</p>
+            <p class="mb-0">Nenhum registro ainda.</p>
         </div>
         {% endif %}
     </div>

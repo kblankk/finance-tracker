@@ -1,3 +1,4 @@
+from decimal import Decimal
 from datetime import date
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
@@ -76,9 +77,26 @@ def delete(id):
     return redirect(url_for('savings.list'))
 
 
+@savings_bp.route('/<int:id>/edit-value', methods=['POST'])
+@login_required
+def edit_value(id):
+    """Edita o valor do cofrinho diretamente (nao afeta receita)."""
+    goal = SavingsGoal.query.filter_by(id=id, user_id=current_user.id).first_or_404()
+    new_value = request.form.get('new_value', type=float)
+    if new_value is not None and new_value >= 0:
+        goal.current_amount = Decimal(str(new_value))
+        goal.is_completed = goal.current_amount >= goal.target_amount
+        db.session.commit()
+        flash('Valor atualizado!', 'success')
+    else:
+        flash('Valor invalido.', 'danger')
+    return redirect(url_for('savings.detail', id=goal.id))
+
+
 @savings_bp.route('/<int:id>/contribute', methods=['GET', 'POST'])
 @login_required
 def contribute(id):
+    """Depositar no cofrinho (desconta da receita)."""
     goal = SavingsGoal.query.filter_by(id=id, user_id=current_user.id).first_or_404()
     form = ContributionForm()
     if request.method == 'GET':
@@ -89,15 +107,49 @@ def contribute(id):
             amount=form.amount.data,
             description=form.description.data,
             date=form.date.data,
+            type='deposit',
         )
         goal.current_amount = (goal.current_amount or 0) + form.amount.data
         if goal.current_amount >= goal.target_amount:
             goal.is_completed = True
         db.session.add(contribution)
         db.session.commit()
-        flash('Contribuicao adicionada!', 'success')
+        flash('Deposito realizado! Valor descontado da receita.', 'success')
         return redirect(url_for('savings.detail', id=goal.id))
-    return render_template('savings/contribute.html', form=form, goal=goal)
+    return render_template('savings/contribute.html', form=form, goal=goal,
+                           action='deposit')
+
+
+@savings_bp.route('/<int:id>/withdraw', methods=['GET', 'POST'])
+@login_required
+def withdraw(id):
+    """Sacar do cofrinho (devolve pra receita)."""
+    goal = SavingsGoal.query.filter_by(id=id, user_id=current_user.id).first_or_404()
+    form = ContributionForm()
+    if request.method == 'GET':
+        form.date.data = date.today()
+    if form.validate_on_submit():
+        if form.amount.data > (goal.current_amount or 0):
+            flash('Valor maior que o saldo do cofrinho.', 'danger')
+            return render_template('savings/contribute.html', form=form, goal=goal,
+                                   action='withdraw')
+        contribution = SavingsContribution(
+            goal_id=goal.id,
+            amount=form.amount.data,
+            description=form.description.data or 'Saque',
+            date=form.date.data,
+            type='withdrawal',
+        )
+        goal.current_amount = (goal.current_amount or 0) - form.amount.data
+        if goal.current_amount < 0:
+            goal.current_amount = 0
+        goal.is_completed = goal.current_amount >= goal.target_amount
+        db.session.add(contribution)
+        db.session.commit()
+        flash('Saque realizado! Valor devolvido a receita.', 'success')
+        return redirect(url_for('savings.detail', id=goal.id))
+    return render_template('savings/contribute.html', form=form, goal=goal,
+                           action='withdraw')
 
 
 @savings_bp.route('/contribution/<int:id>/delete', methods=['POST'])
@@ -107,11 +159,17 @@ def delete_contribution(id):
     goal = SavingsGoal.query.filter_by(
         id=contribution.goal_id, user_id=current_user.id
     ).first_or_404()
-    goal.current_amount = (goal.current_amount or 0) - contribution.amount
-    if goal.current_amount < 0:
-        goal.current_amount = 0
+
+    # Reverter o efeito: deposito diminui, saque aumenta
+    if getattr(contribution, 'type', 'deposit') == 'withdrawal':
+        goal.current_amount = (goal.current_amount or 0) + contribution.amount
+    else:
+        goal.current_amount = (goal.current_amount or 0) - contribution.amount
+        if goal.current_amount < 0:
+            goal.current_amount = 0
+
     goal.is_completed = goal.current_amount >= goal.target_amount
     db.session.delete(contribution)
     db.session.commit()
-    flash('Contribuicao removida.', 'success')
+    flash('Registro removido.', 'success')
     return redirect(url_for('savings.detail', id=goal.id))

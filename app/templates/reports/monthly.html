@@ -11,7 +11,7 @@
     <div class="card-body">
         <form method="GET" class="row g-2 align-items-end">
             {% set months = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'] %}
-            <div class="col-md-2">
+            <div class="col-6 col-md-2">
                 <label class="form-label small mb-1">Mes 1</label>
                 <select name="month1" class="form-select form-select-sm">
                     {% for i in range(1, 13) %}
@@ -19,14 +19,14 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-2">
+            <div class="col-6 col-md-2">
                 <label class="form-label small mb-1">Ano 1</label>
                 <input type="number" name="year1" class="form-control form-control-sm" value="{{ year1 }}" min="2020" max="2099">
             </div>
-            <div class="col-md-1 text-center align-self-end pb-1">
+            <div class="col-12 col-md-1 text-center align-self-end pb-1 d-none d-md-block">
                 <i class="bi bi-arrow-left-right text-muted"></i>
             </div>
-            <div class="col-md-2">
+            <div class="col-6 col-md-2">
                 <label class="form-label small mb-1">Mes 2</label>
                 <select name="month2" class="form-select form-select-sm">
                     {% for i in range(1, 13) %}
@@ -34,11 +34,11 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-2">
+            <div class="col-6 col-md-2">
                 <label class="form-label small mb-1">Ano 2</label>
                 <input type="number" name="year2" class="form-control form-control-sm" value="{{ year2 }}" min="2020" max="2099">
             </div>
-            <div class="col-md-2">
+            <div class="col-12 col-md-2">
                 <button type="submit" class="btn btn-primary btn-sm w-100">
                     <i class="bi bi-arrow-repeat me-1"></i>Comparar
                 </button>
@@ -124,7 +124,7 @@
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+<script src="{{ url_for('static', filename='js/reports.js') }}?v=2"></script>
 <script>
     loadComparison({{ month1 }}, {{ year1 }}, {{ month2 }}, {{ year2 }});
     loadTrend();

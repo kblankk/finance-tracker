@@ -14,6 +14,7 @@ class Income(db.Model):
     date = db.Column(db.Date, nullable=False, index=True)
     is_recurring = db.Column(db.Boolean, default=False)
     recurrence = db.Column(db.String(20), nullable=True)
+    is_received = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):

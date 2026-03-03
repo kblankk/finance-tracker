@@ -1,8 +1,12 @@
 const monthNames = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 let categoryChart = null;
 let trendChart = null;
+window.ftCharts = window.ftCharts || {};
+
+const isPrivacy = () => document.body.classList.contains('privacy-mode');
 
 function fmt(v) {
+    if (isPrivacy()) return '***';
     return 'R$ ' + parseFloat(v).toFixed(2);
 }
 
@@ -22,6 +26,10 @@ function loadComparison(m1, y1, m2, y2) {
             document.getElementById('m2Expense').textContent = fmt(data.month2.expense);
             document.getElementById('m2Balance').textContent = fmt(data.month2.balance);
             document.getElementById('m2Balance').className = 'fw-bold ' + (data.month2.balance >= 0 ? 'text-success' : 'text-danger');
+
+            // Store data for privacy toggle
+            window._reportData = data;
+            window._reportMonths = [m1, y1, m2, y2];
 
             // Category comparison chart
             const allCats = new Set();
@@ -50,13 +58,23 @@ function loadComparison(m1, y1, m2, y2) {
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { labels: { color: '#adb5bd' } } },
+                    plugins: {
+                        legend: { labels: { color: '#adb5bd' } },
+                        tooltip: { enabled: !isPrivacy() }
+                    },
                     scales: {
                         x: { ticks: { color: '#adb5bd' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                        y: { ticks: { color: '#adb5bd', callback: v => 'R$ ' + v }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: {
+                            ticks: {
+                                color: '#adb5bd',
+                                callback: function(v) { return isPrivacy() ? '' : 'R$ ' + v; }
+                            },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
                     }
                 }
             });
+            window.ftCharts.reportCategory = categoryChart;
         });
 }
 
@@ -95,12 +113,44 @@ function loadTrend() {
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { labels: { color: '#adb5bd' } } },
+                    plugins: {
+                        legend: { labels: { color: '#adb5bd' } },
+                        tooltip: { enabled: !isPrivacy() }
+                    },
                     scales: {
                         x: { ticks: { color: '#adb5bd' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                        y: { ticks: { color: '#adb5bd', callback: v => 'R$ ' + v }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: {
+                            ticks: {
+                                color: '#adb5bd',
+                                callback: function(v) { return isPrivacy() ? '' : 'R$ ' + v; }
+                            },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
                     }
                 }
             });
+            window.ftCharts.reportTrend = trendChart;
         });
 }
+
+// Reagir ao toggle de privacidade
+window.addEventListener('ft-privacy-change', function() {
+    // Atualizar valores textuais dos cards
+    if (window._reportData) {
+        const data = window._reportData;
+        document.getElementById('m1Income').textContent = fmt(data.month1.income);
+        document.getElementById('m1Expense').textContent = fmt(data.month1.expense);
+        document.getElementById('m1Balance').textContent = fmt(data.month1.balance);
+        document.getElementById('m2Income').textContent = fmt(data.month2.income);
+        document.getElementById('m2Expense').textContent = fmt(data.month2.expense);
+        document.getElementById('m2Balance').textContent = fmt(data.month2.balance);
+    }
+
+    // Atualizar graficos
+    Object.values(window.ftCharts).forEach(function(chart) {
+        if (chart.options.plugins && chart.options.plugins.tooltip) {
+            chart.options.plugins.tooltip.enabled = !isPrivacy();
+        }
+        chart.update();
+    });
+});

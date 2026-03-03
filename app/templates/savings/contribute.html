@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Contribuir - {{ goal.name }} - FinanceTracker{% endblock %}
+{% block title %}{{ 'Sacar de' if action == 'withdraw' else 'Depositar em' }}: {{ goal.name }} - FinanceTracker{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -9,11 +9,24 @@
         </a>
         <div class="card border-0">
             <div class="card-body p-4">
-                <h5 class="mb-2">Depositar em: {{ goal.name }}</h5>
+                <h5 class="mb-2">
+                    {% if action == 'withdraw' %}
+                    <i class="bi bi-cash-stack text-warning me-1"></i>Sacar de: {{ goal.name }}
+                    {% else %}
+                    <i class="bi bi-plus-circle text-success me-1"></i>Depositar em: {{ goal.name }}
+                    {% endif %}
+                </h5>
                 <div class="progress mb-3" style="height: 6px;">
                     <div class="progress-bar" style="width: {{ goal.progress_pct }}%; background-color: {{ goal.color }}"></div>
                 </div>
-                <p class="text-muted small mb-4">Atual: R$ {{ "%.2f"|format(goal.current_amount or 0) }} / R$ {{ "%.2f"|format(goal.target_amount) }}</p>
+                <p class="text-muted small mb-4">
+                    Saldo atual: R$ {{ "%.2f"|format(goal.current_amount or 0) }} / R$ {{ "%.2f"|format(goal.target_amount) }}
+                    {% if action == 'withdraw' %}
+                    <br><small class="text-warning"><i class="bi bi-info-circle me-1"></i>O valor sacado sera devolvido a receita.</small>
+                    {% else %}
+                    <br><small class="text-success"><i class="bi bi-info-circle me-1"></i>O valor depositado sera descontado da receita.</small>
+                    {% endif %}
+                </p>
                 <form method="POST">
                     {{ form.hidden_tag() }}
                     <div class="row g-3">
@@ -36,9 +49,15 @@
                             {{ form.description(class="form-control", placeholder="Opcional") }}
                         </div>
                         <div class="col-12">
+                            {% if action == 'withdraw' %}
+                            <button type="submit" class="btn btn-warning me-2">
+                                <i class="bi bi-cash-stack me-1"></i> Sacar
+                            </button>
+                            {% else %}
                             <button type="submit" class="btn btn-success me-2">
                                 <i class="bi bi-plus-lg me-1"></i> Depositar
                             </button>
+                            {% endif %}
                             <a href="{{ url_for('savings.detail', id=goal.id) }}" class="btn btn-outline-secondary">Cancelar</a>
                         </div>
                     </div>

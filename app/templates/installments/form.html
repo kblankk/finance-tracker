@@ -50,7 +50,12 @@
                         </div>
                         <div class="col-md-6">
                             {{ form.category_id.label(class="form-label") }}
-                            {{ form.category_id(class="form-select" + (" is-invalid" if form.category_id.errors else "")) }}
+                            <div class="input-group">
+                                {{ form.category_id(class="form-select" + (" is-invalid" if form.category_id.errors else "")) }}
+                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#categoryModal" data-cat-type="expense" title="Nova categoria">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </div>
                             {% for error in form.category_id.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
@@ -112,4 +117,5 @@ numInst.addEventListener('input', calcularResumo);
 additional.addEventListener('input', calcularResumo);
 calcularResumo();
 </script>
+{% include 'components/_category_modal.html' %}
 {% endblock %}

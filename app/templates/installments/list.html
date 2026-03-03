@@ -2,15 +2,59 @@
 {% block title %}Parcelas - FinanceTracker{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h4 class="mb-0"><i class="bi bi-credit-card-2-front me-2"></i>Parcelas</h4>
-    <a href="{{ url_for('installments.add') }}" class="btn btn-primary">
+    <a href="{{ url_for('installments.add') }}" class="btn btn-primary btn-sm">
         <i class="bi bi-plus-lg me-1"></i> Novo Parcelamento
     </a>
 </div>
 
 {% if inst_data %}
-<div class="card border-0">
+<!-- Mobile: Card layout -->
+<div class="d-md-none">
+    {% for item in inst_data %}
+    <div class="card border-0 mb-2">
+        <div class="card-body py-3 px-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                    <a href="{{ url_for('installments.detail', id=item.installment.id) }}" class="text-decoration-none fw-medium">
+                        {{ item.installment.description }}
+                    </a>
+                    {% if item.installment.payee %}
+                    <br><small class="text-muted">{{ item.installment.payee }}</small>
+                    {% endif %}
+                </div>
+                <span class="fw-medium text-nowrap ms-2">R$ {{ "%.2f"|format(item.installment.total_amount) }}</span>
+            </div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                {% if item.installment.category %}
+                <span class="badge" style="background-color: {{ item.installment.category.color or '#6c757d' }}">
+                    {{ item.installment.category.name }}
+                </span>
+                {% endif %}
+                <span class="small {{ 'text-success' if item.paid == item.total else 'text-muted' }}">
+                    {{ item.paid }}/{{ item.total }} parcelas
+                </span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="progress flex-grow-1" style="height: 6px;">
+                    <div class="progress-bar {{ 'bg-success' if item.pct == 100 else 'bg-primary' }}" style="width: {{ item.pct }}%"></div>
+                </div>
+                <div class="d-flex gap-1">
+                    <a href="{{ url_for('installments.detail', id=item.installment.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+                    <form method="POST" action="{{ url_for('installments.delete', id=item.installment.id) }}" class="d-inline" onsubmit="return confirm('Remover este parcelamento e todas as parcelas?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Desktop: Table layout -->
+<div class="card border-0 d-none d-md-block">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover mb-0">
@@ -42,7 +86,7 @@
                             </span>
                             {% endif %}
                         </td>
-                        <td class="text-end">R$ {{ "%.2f"|format(item.installment.total_amount) }}</td>
+                        <td class="text-end fw-medium">R$ {{ "%.2f"|format(item.installment.total_amount) }}</td>
                         <td class="text-center">
                             <span class="{{ 'text-success' if item.paid == item.total else '' }}">
                                 {{ item.paid }}/{{ item.total }}

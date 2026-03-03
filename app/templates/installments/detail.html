@@ -18,11 +18,11 @@
         <div class="row g-3">
             <div class="col-md-4">
                 <small class="text-muted d-block">Valor Total</small>
-                <strong>R$ {{ "%.2f"|format(installment.total_amount) }}</strong>
+                <strong class="savings-value">R$ {{ "%.2f"|format(installment.total_amount) }}</strong>
             </div>
             <div class="col-md-4">
                 <small class="text-muted d-block">Valor por Parcela</small>
-                <strong>R$ {{ "%.2f"|format(installment.total_amount / installment.num_installments) }}</strong>
+                <strong class="savings-value">R$ {{ "%.2f"|format(installment.total_amount / installment.num_installments) }}</strong>
             </div>
             <div class="col-md-4">
                 <small class="text-muted d-block">Inicio</small>
@@ -38,7 +38,31 @@
 
 <div class="card border-0">
     <div class="card-body p-0">
-        <div class="table-responsive">
+        <!-- Mobile: Card layout -->
+        <div class="d-md-none p-2">
+            {% for expense in expenses %}
+            <div class="d-flex justify-content-between align-items-center py-2 {{ 'border-bottom' if not loop.last }}">
+                <div>
+                    <div class="fw-medium small">Parcela {{ expense.installment_number }}/{{ installment.num_installments }}</div>
+                    <small class="text-muted">{{ expense.due_date.strftime('%d/%m/%Y') if expense.due_date else '-' }}</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-medium">R$ {{ "%.2f"|format(expense.amount) }}</span>
+                    <form method="POST" action="{{ url_for('expenses.toggle_paid', id=expense.id) }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        {% if expense.is_paid %}
+                        <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-check-circle"></i></button>
+                        {% else %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-clock"></i></button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Desktop: Table layout -->
+        <div class="table-responsive d-none d-md-block">
             <table class="table table-hover mb-0">
                 <thead>
                     <tr>
@@ -63,7 +87,7 @@
                                 {% endif %}
                             </form>
                         </td>
-                        <td class="text-end">R$ {{ "%.2f"|format(expense.amount) }}</td>
+                        <td class="text-end fw-medium">R$ {{ "%.2f"|format(expense.amount) }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

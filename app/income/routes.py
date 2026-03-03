@@ -99,6 +99,17 @@ def edit(id):
     return render_template('income/form.html', form=form, title='Editar Receita')
 
 
+@income_bp.route('/toggle-received/<int:id>', methods=['POST'])
+@login_required
+def toggle_received(id):
+    income = Income.query.filter_by(id=id, user_id=current_user.id).first_or_404()
+    income.is_received = not income.is_received
+    db.session.commit()
+    flash('Receita confirmada!' if income.is_received else 'Receita desmarcada.', 'success')
+    next_url = request.form.get('next') or url_for('income.list')
+    return redirect(next_url)
+
+
 @income_bp.route('/delete/<int:id>', methods=['POST'])
 @login_required
 def delete(id):

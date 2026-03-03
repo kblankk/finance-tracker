@@ -1,7 +1,7 @@
 <nav class="sidebar d-flex flex-column p-3" id="sidebar">
     <a href="{{ url_for('main.dashboard') }}" class="d-flex align-items-center mb-4 text-decoration-none">
         <i class="bi bi-wallet2 fs-3 text-primary me-2"></i>
-        <span class="fs-5 fw-bold text-white">FinanceTracker</span>
+        <span class="fs-5 fw-bold sidebar-title">FinanceTracker</span>
     </a>
 
     <ul class="nav nav-pills flex-column gap-1">
@@ -11,13 +11,8 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {{ 'active' if request.endpoint and 'income' in request.endpoint }}" href="{{ url_for('income.list') }}">
-                <i class="bi bi-arrow-up-circle me-2"></i> Receitas
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {{ 'active' if request.endpoint and 'expenses' in request.endpoint }}" href="{{ url_for('expenses.list') }}">
-                <i class="bi bi-arrow-down-circle me-2"></i> Despesas
+            <a class="nav-link {{ 'active' if request.endpoint and ('transactions' in request.endpoint or 'income' in request.endpoint or 'expenses' in request.endpoint) }}" href="{{ url_for('transactions.list') }}">
+                <i class="bi bi-arrow-left-right me-2"></i> Lancamentos
             </a>
         </li>
         <li class="nav-item">
@@ -26,11 +21,6 @@
                 {% if unread_count is defined and unread_count > 0 %}
                 <span class="badge bg-danger ms-1">{{ unread_count }}</span>
                 {% endif %}
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {{ 'active' if request.endpoint and 'budgets' in request.endpoint }}" href="{{ url_for('budgets.list') }}">
-                <i class="bi bi-speedometer me-2"></i> Orcamento
             </a>
         </li>
         <li class="nav-item">
@@ -62,12 +52,13 @@
 
     <div class="mt-auto">
         <hr class="border-secondary">
-        <div class="d-flex align-items-center">
+        <a href="{{ url_for('profile.settings') }}" class="d-flex align-items-center text-decoration-none" title="Meu Perfil">
             <i class="bi bi-person-circle fs-4 me-2 text-secondary"></i>
             <div class="flex-grow-1">
-                <small class="text-white d-block">{{ current_user.username }}</small>
+                <small class="sidebar-title d-block">{{ current_user.username }}</small>
                 <small class="text-muted">{{ current_user.role }}</small>
             </div>
-        </div>
+            <i class="bi bi-chevron-right text-muted"></i>
+        </a>
     </div>
 </nav>

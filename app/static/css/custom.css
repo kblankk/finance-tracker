@@ -10,7 +10,6 @@
 .sidebar {
     width: var(--ft-sidebar-width);
     min-height: 100vh;
-    background-color: #1a1d21;
     position: sticky;
     top: 0;
     flex-shrink: 0;
@@ -18,16 +17,10 @@
 }
 
 .sidebar .nav-link {
-    color: #adb5bd;
     border-radius: 8px;
     padding: 10px 16px;
     font-size: 0.9rem;
     transition: all 0.2s;
-}
-
-.sidebar .nav-link:hover {
-    color: #fff;
-    background-color: rgba(255, 255, 255, 0.08);
 }
 
 .sidebar .nav-link.active {
@@ -38,14 +31,12 @@
 /* Stat Cards */
 .stat-card {
     background: var(--bs-body-bg);
-    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .stat-icon {
@@ -65,7 +56,6 @@
 /* Cards */
 .card {
     background: var(--bs-body-bg);
-    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
 }
 
@@ -109,19 +99,12 @@
     font-weight: bold;
 }
 
-/* Auth Pages */
-[data-bs-theme="dark"] .min-vh-100 {
-    background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1a1d21 100%);
-}
-
 /* Bottom Nav Mobile */
 .bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    background: #1a1d21;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -173,8 +156,149 @@
     visibility: visible;
 }
 
-/* Responsive */
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* ========================================
+   DARK THEME
+   ======================================== */
+[data-bs-theme="dark"] .sidebar {
+    background-color: #1a1d21;
+}
+
+[data-bs-theme="dark"] .sidebar .nav-link {
+    color: #adb5bd;
+}
+
+[data-bs-theme="dark"] .sidebar .nav-link:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-bs-theme="dark"] .sidebar-title {
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .stat-card,
+[data-bs-theme="dark"] .card {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-bs-theme="dark"] .stat-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .bottom-nav {
+    background: #1a1d21;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .min-vh-100 {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1a1d21 100%);
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* ========================================
+   LIGHT THEME
+   ======================================== */
+[data-bs-theme="light"] .sidebar {
+    background-color: #f0f2f5;
+    border-right: 1px solid #dee2e6;
+}
+
+[data-bs-theme="light"] .sidebar .nav-link {
+    color: #495057;
+}
+
+[data-bs-theme="light"] .sidebar .nav-link:hover {
+    color: #000;
+    background-color: rgba(0, 0, 0, 0.06);
+}
+
+[data-bs-theme="light"] .sidebar-title {
+    color: #212529;
+}
+
+[data-bs-theme="light"] .stat-card,
+[data-bs-theme="light"] .card {
+    border: 1px solid #dee2e6 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+[data-bs-theme="light"] .stat-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+[data-bs-theme="light"] .list-group-item {
+    border-color: #dee2e6;
+}
+
+[data-bs-theme="light"] .card-header {
+    border-bottom-color: #dee2e6 !important;
+}
+
+[data-bs-theme="light"] .bottom-nav {
+    background: #fff;
+    border-top: 1px solid #dee2e6;
+}
+
+[data-bs-theme="light"] .navbar {
+    border-bottom-color: #dee2e6 !important;
+}
+
+[data-bs-theme="light"] footer {
+    border-top-color: #dee2e6 !important;
+}
+
+[data-bs-theme="light"] .min-vh-100 {
+    background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 50%, #fff 100%);
+}
+
+[data-bs-theme="light"] .sidebar hr {
+    border-color: #dee2e6 !important;
+}
+
+[data-bs-theme="light"] ::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 3px;
+}
+
+[data-bs-theme="light"] ::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
 @media (max-width: 768px) {
+    /* Prevent horizontal overflow on mobile */
+    body {
+        overflow-x: hidden;
+    }
+
+    .flex-grow-1 {
+        min-width: 0;
+    }
+
+    .container-fluid {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
     .sidebar {
         position: fixed;
         z-index: 1050;
@@ -243,47 +367,31 @@
     .list-group-item {
         padding: 0.75rem 1rem;
     }
+
+    /* Header flex-wrap para botoes */
+    .d-flex.flex-wrap.gap-2 .btn {
+        font-size: 0.8rem;
+    }
+
+    /* Savings detail - botoes compactos no mobile */
+    .d-flex.gap-1.flex-wrap .btn {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.5rem;
+    }
 }
 
-[data-bs-theme="light"] .bottom-nav {
-    background: #f8f9fa;
-    border-top-color: #dee2e6;
-}
-
-/* Light Theme Adjustments */
-[data-bs-theme="light"] .sidebar {
-    background-color: #f8f9fa;
-    border-right: 1px solid #dee2e6;
-}
-
-[data-bs-theme="light"] .sidebar .nav-link {
-    color: #495057;
-}
-
-[data-bs-theme="light"] .sidebar .nav-link:hover {
-    color: #000;
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-[data-bs-theme="light"] .stat-card,
-[data-bs-theme="light"] .card {
-    border-color: rgba(0, 0, 0, 0.1);
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-    width: 6px;
-}
-
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #333;
-    border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #555;
+/* Privacy mode - esconde valores monetarios */
+.privacy-mode .stat-card h4,
+.privacy-mode .stat-card small.text-primary,
+.privacy-mode .text-success.fw-medium,
+.privacy-mode .text-danger.fw-medium,
+.privacy-mode .text-warning.fw-medium,
+.privacy-mode .badge.bg-danger:not(.ms-1),
+.privacy-mode td.text-end.fw-medium,
+.privacy-mode .progress-bar,
+.privacy-mode #comparisonCards .fw-bold,
+.privacy-mode .savings-value {
+    filter: blur(8px);
+    user-select: none;
+    pointer-events: none;
 }

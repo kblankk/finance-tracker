@@ -25,6 +25,9 @@ def create_app(config_class='config.DevelopmentConfig'):
     from app.reports import reports_bp
     from app.budgets import budgets_bp
     from app.savings import savings_bp
+    from app.profile import profile_bp
+    from app.transactions import transactions_bp
+    from app.categories import categories_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -36,6 +39,9 @@ def create_app(config_class='config.DevelopmentConfig'):
     app.register_blueprint(reports_bp)
     app.register_blueprint(budgets_bp)
     app.register_blueprint(savings_bp)
+    app.register_blueprint(profile_bp)
+    app.register_blueprint(transactions_bp)
+    app.register_blueprint(categories_bp)
 
     # Redirect unapproved users
     @app.before_request

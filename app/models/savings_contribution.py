@@ -10,6 +10,7 @@ class SavingsContribution(db.Model):
     amount = db.Column(db.Numeric(12, 2), nullable=False)
     description = db.Column(db.String(256), nullable=True)
     date = db.Column(db.Date, nullable=False)
+    type = db.Column(db.String(20), default='deposit')  # 'deposit' or 'withdrawal'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):

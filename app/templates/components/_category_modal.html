@@ -1,0 +1,124 @@
+<!-- Modal para criar nova categoria -->
+<div class="modal fade" id="categoryModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title"><i class="bi bi-plus-circle me-1"></i>Nova Categoria</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label small">Nome</label>
+                    <input type="text" class="form-control form-control-sm" id="catName" placeholder="Ex: Pet, Streaming..." required>
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="form-label small">Cor</label>
+                        <input type="color" class="form-control form-control-sm form-control-color w-100" id="catColor" value="#6c757d">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small">Icone</label>
+                        <select class="form-select form-select-sm" id="catIcon">
+                            <option value="bi-tag">Tag</option>
+                            <option value="bi-cart">Mercado</option>
+                            <option value="bi-house-door">Moradia</option>
+                            <option value="bi-car-front">Transporte</option>
+                            <option value="bi-heart-pulse">Saude</option>
+                            <option value="bi-book">Educacao</option>
+                            <option value="bi-controller">Lazer</option>
+                            <option value="bi-tv">Assinaturas</option>
+                            <option value="bi-cup-hot">Alimentacao</option>
+                            <option value="bi-bag">Roupas</option>
+                            <option value="bi-credit-card">Dividas</option>
+                            <option value="bi-laptop">Trabalho</option>
+                            <option value="bi-cash-stack">Dinheiro</option>
+                            <option value="bi-graph-up-arrow">Investimentos</option>
+                            <option value="bi-gift">Presente</option>
+                            <option value="bi-phone">Celular</option>
+                            <option value="bi-lightning">Energia</option>
+                            <option value="bi-droplet">Agua</option>
+                            <option value="bi-wifi">Internet</option>
+                            <option value="bi-tools">Manutencao</option>
+                            <option value="bi-three-dots">Outros</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="alert alert-danger py-1 px-2 mt-2 small d-none" id="catError"></div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-sm btn-primary" id="catSaveBtn">
+                    <i class="bi bi-check-lg me-1"></i>Criar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const modal = document.getElementById('categoryModal');
+    const saveBtn = document.getElementById('catSaveBtn');
+    const errorEl = document.getElementById('catError');
+    let catType = 'expense';
+    let targetSelect = null;
+
+    // Capturar o tipo e o select ao abrir o modal
+    modal.addEventListener('show.bs.modal', function(e) {
+        const trigger = e.relatedTarget;
+        if (trigger) {
+            catType = trigger.getAttribute('data-cat-type') || 'expense';
+            targetSelect = trigger.closest('.input-group').querySelector('select');
+        }
+        // Limpar
+        document.getElementById('catName').value = '';
+        document.getElementById('catColor').value = '#6c757d';
+        document.getElementById('catIcon').value = 'bi-tag';
+        errorEl.classList.add('d-none');
+    });
+
+    saveBtn.addEventListener('click', function() {
+        const name = document.getElementById('catName').value.trim();
+        const color = document.getElementById('catColor').value;
+        const icon = document.getElementById('catIcon').value;
+
+        if (!name) {
+            errorEl.textContent = 'Nome e obrigatorio';
+            errorEl.classList.remove('d-none');
+            return;
+        }
+
+        saveBtn.disabled = true;
+        fetch('/api/categories', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('input[name=csrf_token]').value
+            },
+            body: JSON.stringify({ name, type: catType, color, icon })
+        })
+        .then(r => r.json().then(data => ({ ok: r.ok, data })))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                errorEl.textContent = data.error || 'Erro ao criar';
+                errorEl.classList.remove('d-none');
+                saveBtn.disabled = false;
+                return;
+            }
+            // Adicionar ao select e selecionar
+            if (targetSelect) {
+                const opt = new Option(data.name, data.id, true, true);
+                targetSelect.add(opt);
+            }
+            // Fechar modal
+            bootstrap.Modal.getInstance(modal).hide();
+            saveBtn.disabled = false;
+        })
+        .catch(() => {
+            errorEl.textContent = 'Erro de conexao';
+            errorEl.classList.remove('d-none');
+            saveBtn.disabled = false;
+        });
+    });
+})();
+</script>

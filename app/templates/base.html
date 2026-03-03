@@ -6,16 +6,16 @@
     <title>{% block title %}FinanceTracker{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/custom.css') }}?v=5" rel="stylesheet">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     {% if current_user.is_authenticated and current_user.is_approved %}
-    <div class="d-flex">
+    <div class="d-flex" style="overflow-x: hidden; width: 100%;">
         <!-- Backdrop mobile -->
         <div class="sidebar-backdrop d-md-none" id="sidebarBackdrop"></div>
         {% include 'components/_sidebar.html' %}
-        <div class="flex-grow-1 d-flex flex-column min-vh-100">
+        <div class="flex-grow-1 d-flex flex-column min-vh-100" style="min-width: 0;">
             {% include 'components/_navbar.html' %}
             <main class="container-fluid p-3 p-md-4 flex-grow-1 pb-mobile">
                 {% include 'components/_flash.html' %}
@@ -33,17 +33,17 @@
             <i class="bi bi-speedometer2"></i>
             <span>Inicio</span>
         </a>
-        <a href="{{ url_for('income.list') }}" class="bottom-nav-item {{ 'active' if request.endpoint and 'income' in request.endpoint }}">
-            <i class="bi bi-arrow-up-circle"></i>
-            <span>Receitas</span>
-        </a>
-        <a href="{{ url_for('expenses.list') }}" class="bottom-nav-item {{ 'active' if request.endpoint and 'expenses' in request.endpoint }}">
-            <i class="bi bi-arrow-down-circle"></i>
-            <span>Despesas</span>
+        <a href="{{ url_for('transactions.list') }}" class="bottom-nav-item {{ 'active' if request.endpoint and ('transactions' in request.endpoint or 'income' in request.endpoint or 'expenses' in request.endpoint) }}">
+            <i class="bi bi-arrow-left-right"></i>
+            <span>Lancamentos</span>
         </a>
         <a href="{{ url_for('installments.list') }}" class="bottom-nav-item {{ 'active' if request.endpoint and 'installments' in request.endpoint }}">
             <i class="bi bi-credit-card-2-front"></i>
             <span>Parcelas</span>
+        </a>
+        <a href="{{ url_for('savings.list') }}" class="bottom-nav-item {{ 'active' if request.endpoint and 'savings' in request.endpoint }}">
+            <i class="bi bi-piggy-bank"></i>
+            <span>Metas</span>
         </a>
         <button class="bottom-nav-item" id="mobileMenuBtn">
             <i class="bi bi-list"></i>

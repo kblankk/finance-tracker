@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}Editar Usuario - FinanceTracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0"><i class="bi bi-person-fill-gear me-2"></i>Editar Usuario</h4>
+    <a href="{{ url_for('admin.users') }}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Voltar
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Editar dados -->
+    <div class="col-md-6">
+        <div class="card border-0 h-100">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="mb-0"><i class="bi bi-pencil me-2"></i>Dados do Usuario</h6>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.edit_user', id=user.id) }}">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.username.label(class="form-label") }}
+                        {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
+                        {% for error in form.username.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                        {% for error in form.email.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.role.label(class="form-label") }}
+                        {{ form.role(class="form-select") }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>Salvar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resetar senha -->
+    <div class="col-md-6">
+        <div class="card border-0 h-100">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Resetar Senha</h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning py-2 mb-3">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    <small>A senha atual nao pode ser visualizada. Defina uma nova senha para o usuario.</small>
+                </div>
+                <form method="POST" action="{{ url_for('admin.reset_password', id=user.id) }}">
+                    {{ password_form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ password_form.new_password.label(class="form-label") }}
+                        <div class="input-group">
+                            {{ password_form.new_password(class="form-control" + (" is-invalid" if password_form.new_password.errors else ""), placeholder="Minimo 6 caracteres", id="newPassword") }}
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword" title="Mostrar senha">
+                                <i class="bi bi-eye" id="eyeIcon"></i>
+                            </button>
+                            {% for error in password_form.new_password.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning" onclick="return confirm('Resetar a senha de {{ user.username }}?')">
+                        <i class="bi bi-arrow-repeat me-1"></i>Resetar Senha
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info -->
+    <div class="col-12">
+        <div class="card border-0">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informacoes</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-auto">
+                        <small class="text-muted">ID</small>
+                        <p class="mb-0 fw-medium">#{{ user.id }}</p>
+                    </div>
+                    <div class="col-auto">
+                        <small class="text-muted">Conta criada em</small>
+                        <p class="mb-0 fw-medium">{{ user.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                    </div>
+                    <div class="col-auto">
+                        <small class="text-muted">Aprovado</small>
+                        <p class="mb-0 fw-medium">{{ 'Sim' if user.is_approved else 'Nao' }}</p>
+                    </div>
+                    <div class="col-auto">
+                        <small class="text-muted">Ativo</small>
+                        <p class="mb-0 fw-medium">{{ 'Sim' if user.is_active else 'Nao' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('togglePassword').addEventListener('click', function() {
+    const input = document.getElementById('newPassword');
+    const icon = document.getElementById('eyeIcon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+});
+</script>
+{% endblock %}

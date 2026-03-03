@@ -1,13 +1,20 @@
 // FinanceTracker - Dashboard Charts
 
 document.addEventListener('DOMContentLoaded', function() {
-    const chartDefaults = {
-        color: '#adb5bd',
-        borderColor: 'rgba(255, 255, 255, 0.1)',
-    };
+    function getThemeColors() {
+        const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+        return {
+            text: isDark ? '#adb5bd' : '#495057',
+            grid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+        };
+    }
 
-    Chart.defaults.color = chartDefaults.color;
-    Chart.defaults.borderColor = chartDefaults.borderColor;
+    const colors = getThemeColors();
+    Chart.defaults.color = colors.text;
+    Chart.defaults.borderColor = colors.grid;
+
+    const isPrivacy = () => document.body.classList.contains('privacy-mode');
+    window.ftCharts = window.ftCharts || {};
 
     // Monthly Trend Chart (Line)
     fetch('/api/monthly-trend')
@@ -15,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             const ctx = document.getElementById('trendChart');
             if (!ctx) return;
-            new Chart(ctx, {
+            const chart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: data.labels,
@@ -51,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             labels: { usePointStyle: true, padding: 20 }
                         },
                         tooltip: {
+                            enabled: !isPrivacy(),
                             callbacks: {
                                 label: function(ctx) {
                                     return ctx.dataset.label + ': R$ ' + ctx.parsed.y.toFixed(2);
@@ -62,12 +70,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                callback: function(v) { return 'R$ ' + v; }
+                                callback: function(v) {
+                                    return isPrivacy() ? '' : 'R$ ' + v;
+                                }
                             }
                         }
                     }
                 }
             });
+            window.ftCharts.dashboardTrend = chart;
         })
         .catch(() => {});
 
@@ -77,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             const ctx = document.getElementById('expensePieChart');
             if (!ctx || data.labels.length === 0) return;
-            new Chart(ctx, {
+            const chart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: data.labels,
@@ -102,6 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         },
                         tooltip: {
+                            enabled: !isPrivacy(),
                             callbacks: {
                                 label: function(ctx) {
                                     return ctx.label + ': R$ ' + ctx.parsed.toFixed(2);
@@ -111,6 +123,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             });
+            window.ftCharts.dashboardPie = chart;
         })
         .catch(() => {});
+
+    // Reagir ao toggle de privacidade
+    window.addEventListener('ft-privacy-change', function() {
+        Object.values(window.ftCharts).forEach(function(chart) {
+            if (chart.options.plugins && chart.options.plugins.tooltip) {
+                chart.options.plugins.tooltip.enabled = !isPrivacy();
+            }
+            chart.update();
+        });
+    });
 });

@@ -28,6 +28,26 @@
                 {% endif %}
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.endpoint and 'budgets' in request.endpoint }}" href="{{ url_for('budgets.list') }}">
+                <i class="bi bi-speedometer me-2"></i> Orcamento
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.endpoint and 'savings' in request.endpoint }}" href="{{ url_for('savings.list') }}">
+                <i class="bi bi-piggy-bank me-2"></i> Metas
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.endpoint and 'installments' in request.endpoint }}" href="{{ url_for('installments.list') }}">
+                <i class="bi bi-credit-card-2-front me-2"></i> Parcelas
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.endpoint and 'reports' in request.endpoint }}" href="{{ url_for('reports.monthly') }}">
+                <i class="bi bi-bar-chart-line me-2"></i> Relatorios
+            </a>
+        </li>
         {% if current_user.is_admin %}
         <li class="nav-item mt-3">
             <small class="text-muted text-uppercase px-3">Admin</small>

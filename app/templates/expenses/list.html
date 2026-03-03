@@ -23,6 +23,8 @@
     </div>
 </div>
 
+{% include 'components/_filters.html' %}
+
 <div class="card border-0">
     <div class="card-body p-0">
         {% if expenses.items %}
@@ -43,7 +45,16 @@
                     {% for expense in expenses.items %}
                     <tr>
                         <td>{{ expense.due_date.strftime('%d/%m/%Y') if expense.due_date else '-' }}</td>
-                        <td>{{ expense.description or '-' }}</td>
+                        <td>
+                            {{ expense.description or '-' }}
+                            {% if expense.installment_id %}
+                            <br>
+                            <span class="badge bg-info bg-opacity-10 text-info">
+                                <i class="bi bi-credit-card-2-front me-1"></i>Parcela {{ expense.installment_number }}/{{ expense.installment.num_installments }}
+                                - {{ expense.due_date.strftime('%b/%Y') if expense.due_date else '' }}
+                            </span>
+                            {% endif %}
+                        </td>
                         <td>
                             {% if expense.category %}
                             <span class="badge" style="background-color: {{ expense.category.color or '#6c757d' }}">
@@ -53,21 +64,29 @@
                         </td>
                         <td>{{ expense.payee or '-' }}</td>
                         <td class="text-center">
-                            <form method="POST" action="{{ url_for('expenses.toggle_paid', id=expense.id) }}" class="d-inline">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                {% if expense.is_paid %}
-                                <button type="submit" class="btn btn-sm btn-success" title="Marcar como pendente">
-                                    <i class="bi bi-check-circle"></i> Paga
-                                </button>
-                                {% else %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Marcar como paga">
-                                    <i class="bi bi-clock"></i> Pendente
-                                </button>
-                                {% endif %}
-                            </form>
+                            {% if expense.is_paid %}
+                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Paga</span>
+                            {% else %}
+                            <span class="badge bg-danger"><i class="bi bi-clock me-1"></i>Pendente</span>
+                            {% endif %}
                         </td>
                         <td class="text-end text-danger fw-medium">R$ {{ "%.2f"|format(expense.amount) }}</td>
-                        <td class="text-center">
+                        <td class="text-center text-nowrap">
+                            {% if not expense.is_paid %}
+                            <form method="POST" action="{{ url_for('expenses.toggle_paid', id=expense.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-success me-1" title="Marcar como paga">
+                                    <i class="bi bi-check-lg"></i> Pagar
+                                </button>
+                            </form>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('expenses.toggle_paid', id=expense.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-warning me-1" title="Desfazer pagamento">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                </button>
+                            </form>
+                            {% endif %}
                             <a href="{{ url_for('expenses.edit', id=expense.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
@@ -89,17 +108,17 @@
             <nav>
                 <ul class="pagination pagination-sm justify-content-center mb-0">
                     {% if expenses.has_prev %}
-                    <li class="page-item"><a class="page-link" href="?page={{ expenses.prev_num }}&status={{ filter_status }}">Anterior</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ expenses.prev_num }}&status={{ filter_status }}&date_from={{ filters.date_from or '' }}&date_to={{ filters.date_to or '' }}&category_id={{ filters.category_id or '' }}&amount_min={{ filters.amount_min or '' }}&amount_max={{ filters.amount_max or '' }}&search={{ filters.search or '' }}">Anterior</a></li>
                     {% endif %}
                     {% for p in expenses.iter_pages() %}
                         {% if p %}
-                        <li class="page-item {{ 'active' if p == expenses.page }}"><a class="page-link" href="?page={{ p }}&status={{ filter_status }}">{{ p }}</a></li>
+                        <li class="page-item {{ 'active' if p == expenses.page }}"><a class="page-link" href="?page={{ p }}&status={{ filter_status }}&date_from={{ filters.date_from or '' }}&date_to={{ filters.date_to or '' }}&category_id={{ filters.category_id or '' }}&amount_min={{ filters.amount_min or '' }}&amount_max={{ filters.amount_max or '' }}&search={{ filters.search or '' }}">{{ p }}</a></li>
                         {% else %}
                         <li class="page-item disabled"><span class="page-link">...</span></li>
                         {% endif %}
                     {% endfor %}
                     {% if expenses.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ expenses.next_num }}&status={{ filter_status }}">Proximo</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ expenses.next_num }}&status={{ filter_status }}&date_from={{ filters.date_from or '' }}&date_to={{ filters.date_to or '' }}&category_id={{ filters.category_id or '' }}&amount_min={{ filters.amount_min or '' }}&amount_max={{ filters.amount_max or '' }}&search={{ filters.search or '' }}">Proximo</a></li>
                     {% endif %}
                 </ul>
             </nav>

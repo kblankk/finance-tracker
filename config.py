@@ -8,6 +8,10 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-dev-key')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     PERMANENT_SESSION_LIFETIME = timedelta(hours=2)
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SECURE = False
+    WTF_CSRF_SSL_STRICT = False
 
 
 class DevelopmentConfig(Config):

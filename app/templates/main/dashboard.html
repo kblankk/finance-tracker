@@ -9,7 +9,7 @@
 
 <!-- Summary Cards -->
 <div class="row g-3 mb-4">
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
         <div class="card stat-card border-0 h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
@@ -24,7 +24,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
         <div class="card stat-card border-0 h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
@@ -39,7 +39,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
         <div class="card stat-card border-0 h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
@@ -56,7 +56,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
         <div class="card stat-card border-0 h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
@@ -96,6 +96,85 @@
         </div>
     </div>
 </div>
+
+<!-- Budget Progress -->
+{% if budget_alerts %}
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="card border-0">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-speedometer me-2"></i>Orcamento do Mes</h6>
+                <a href="{{ url_for('budgets.list') }}" class="btn btn-sm btn-outline-primary">Ver todos</a>
+            </div>
+            <div class="card-body pt-0">
+                <div class="row g-3">
+                    {% for b in budget_alerts %}
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="fw-medium">
+                                <i class="bi bi-circle-fill me-1" style="color: {{ b.color }}; font-size: 0.5rem;"></i>
+                                {{ b.category }}
+                            </small>
+                            <small class="text-muted">R$ {{ "%.2f"|format(b.spent) }} / R$ {{ "%.2f"|format(b.limit) }}</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar {% if b.over %}bg-danger{% elif b.pct >= 75 %}bg-warning{% else %}bg-success{% endif %}"
+                                 style="width: {{ b.pct }}%"></div>
+                        </div>
+                        {% if b.over %}
+                        <small class="text-danger"><i class="bi bi-exclamation-circle me-1"></i>Limite ultrapassado!</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Savings Goals -->
+{% if savings_goals %}
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="card border-0">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-piggy-bank me-2"></i>Metas de Economia</h6>
+                <a href="{{ url_for('savings.list') }}" class="btn btn-sm btn-outline-primary">Ver todas</a>
+            </div>
+            <div class="card-body pt-0">
+                <div class="row g-3">
+                    {% for goal in savings_goals %}
+                    <div class="col-md-4">
+                        <div class="card border h-100" style="border-left: 3px solid {{ goal.color or '#0d6efd' }} !important;">
+                            <div class="card-body py-2 px-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-medium small">
+                                        <i class="bi bi-{{ goal.icon or 'piggy-bank' }} me-1" style="color: {{ goal.color or '#0d6efd' }};"></i>
+                                        {{ goal.name }}
+                                    </span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary">{{ goal.progress_pct|int }}%</span>
+                                </div>
+                                <div class="progress mb-1" style="height: 6px;">
+                                    <div class="progress-bar" style="width: {{ goal.progress_pct }}%; background-color: {{ goal.color or '#0d6efd' }};"></div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">R$ {{ "%.2f"|format(goal.current_amount) }}</small>
+                                    <small class="text-muted">R$ {{ "%.2f"|format(goal.target_amount) }}</small>
+                                </div>
+                                {% if goal.deadline %}
+                                <small class="text-muted"><i class="bi bi-calendar me-1"></i>{{ goal.deadline.strftime('%d/%m/%Y') }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- Upcoming Bills & Recent Transactions -->
 <div class="row g-3">

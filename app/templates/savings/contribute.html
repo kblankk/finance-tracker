@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Contribuir - {{ goal.name }} - FinanceTracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <a href="{{ url_for('savings.detail', id=goal.id) }}" class="btn btn-sm btn-outline-secondary mb-3">
+            <i class="bi bi-arrow-left me-1"></i> Voltar
+        </a>
+        <div class="card border-0">
+            <div class="card-body p-4">
+                <h5 class="mb-2">Depositar em: {{ goal.name }}</h5>
+                <div class="progress mb-3" style="height: 6px;">
+                    <div class="progress-bar" style="width: {{ goal.progress_pct }}%; background-color: {{ goal.color }}"></div>
+                </div>
+                <p class="text-muted small mb-4">Atual: R$ {{ "%.2f"|format(goal.current_amount or 0) }} / R$ {{ "%.2f"|format(goal.target_amount) }}</p>
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form.amount.label(class="form-label") }}
+                            {{ form.amount(class="form-control" + (" is-invalid" if form.amount.errors else ""), placeholder="0.00") }}
+                            {% for error in form.amount.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.date.label(class="form-label") }}
+                            {{ form.date(class="form-control" + (" is-invalid" if form.date.errors else "")) }}
+                            {% for error in form.date.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-12">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control", placeholder="Opcional") }}
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success me-2">
+                                <i class="bi bi-plus-lg me-1"></i> Depositar
+                            </button>
+                            <a href="{{ url_for('savings.detail', id=goal.id) }}" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

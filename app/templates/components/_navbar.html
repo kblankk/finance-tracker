@@ -41,11 +41,28 @@ toggle.addEventListener('click', () => {
 });
 
 // Sidebar toggle (mobile)
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    sidebar.classList.toggle('show');
+    if (backdrop) backdrop.classList.toggle('show');
+}
+
 const sidebarBtn = document.getElementById('sidebarToggle');
 if (sidebarBtn) {
-    sidebarBtn.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('show');
-    });
+    sidebarBtn.addEventListener('click', toggleSidebar);
+}
+
+// Menu button (bottom nav)
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', toggleSidebar);
+}
+
+// Fechar sidebar ao clicar no backdrop
+const backdrop = document.getElementById('sidebarBackdrop');
+if (backdrop) {
+    backdrop.addEventListener('click', toggleSidebar);
 }
 
 // Notification badge

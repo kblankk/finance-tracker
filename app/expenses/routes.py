@@ -3,6 +3,7 @@ import io
 from datetime import date
 from flask import render_template, redirect, url_for, flash, request, Response
 from flask_login import login_required, current_user
+from sqlalchemy import and_, or_, func
 from app.expenses import expenses_bp
 from app.expenses.forms import ExpenseForm
 from app.extensions import db
@@ -15,6 +16,12 @@ from app.models.category import Category
 def list():
     page = request.args.get('page', 1, type=int)
     filter_status = request.args.get('status', 'all')
+    date_from = request.args.get('date_from', type=str)
+    date_to = request.args.get('date_to', type=str)
+    category_id = request.args.get('category_id', type=int)
+    amount_min = request.args.get('amount_min', type=float)
+    amount_max = request.args.get('amount_max', type=float)
+    search = request.args.get('search', type=str)
 
     query = Expense.query.filter_by(user_id=current_user.id)
     if filter_status == 'paid':
@@ -22,8 +29,55 @@ def list():
     elif filter_status == 'unpaid':
         query = query.filter_by(is_paid=False)
 
+    if date_from:
+        query = query.filter(Expense.due_date >= date.fromisoformat(date_from))
+    if date_to:
+        query = query.filter(Expense.due_date <= date.fromisoformat(date_to))
+    if category_id:
+        query = query.filter_by(category_id=category_id)
+    if amount_min is not None:
+        query = query.filter(Expense.amount >= amount_min)
+    if amount_max is not None:
+        query = query.filter(Expense.amount <= amount_max)
+    if search:
+        query = query.filter(
+            db.or_(
+                Expense.description.ilike(f'%{search}%'),
+                Expense.payee.ilike(f'%{search}%'),
+            )
+        )
+
+    # Parcelas: mostrar apenas a proxima nao paga de cada parcelamento
+    next_installment_sq = db.session.query(
+        Expense.installment_id,
+        func.min(Expense.installment_number).label('next_num')
+    ).filter(
+        Expense.user_id == current_user.id,
+        Expense.installment_id.isnot(None),
+        Expense.is_paid == False,
+    ).group_by(Expense.installment_id).subquery()
+
+    query = query.outerjoin(
+        next_installment_sq,
+        Expense.installment_id == next_installment_sq.c.installment_id
+    ).filter(
+        or_(
+            Expense.installment_id.is_(None),
+            Expense.is_paid == True,
+            Expense.installment_number == next_installment_sq.c.next_num,
+        )
+    )
+
     expenses = query.order_by(Expense.due_date.desc()).paginate(page=page, per_page=10)
-    return render_template('expenses/list.html', expenses=expenses, filter_status=filter_status)
+    categories = _get_expense_categories()
+    filters = {
+        'date_from': date_from, 'date_to': date_to,
+        'category_id': category_id, 'amount_min': amount_min,
+        'amount_max': amount_max, 'search': search,
+    }
+    return render_template('expenses/list.html',
+        expenses=expenses, filter_status=filter_status,
+        categories=categories, filters=filters)
 
 
 @expenses_bp.route('/add', methods=['GET', 'POST'])

@@ -3,3 +3,7 @@ from app.models.category import Category
 from app.models.income import Income
 from app.models.expense import Expense
 from app.models.reminder import Reminder
+from app.models.budget import Budget
+from app.models.savings_goal import SavingsGoal
+from app.models.savings_contribution import SavingsContribution
+from app.models.installment import Installment

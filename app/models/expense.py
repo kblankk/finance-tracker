@@ -18,6 +18,8 @@ class Expense(db.Model):
     recurrence = db.Column(db.String(20), nullable=True)
     priority = db.Column(db.String(10), default='normal')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    installment_id = db.Column(db.Integer, db.ForeignKey('installments.id'), nullable=True)
+    installment_number = db.Column(db.Integer, nullable=True)
 
     reminders = db.relationship('Reminder', backref='expense', lazy='dynamic', cascade='all, delete-orphan')
 

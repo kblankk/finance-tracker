@@ -1,5 +1,6 @@
 import csv
 import io
+from datetime import date
 from flask import render_template, redirect, url_for, flash, request, Response
 from flask_login import login_required, current_user
 from app.income import income_bp
@@ -13,10 +14,42 @@ from app.models.category import Category
 @login_required
 def list():
     page = request.args.get('page', 1, type=int)
-    incomes = Income.query.filter_by(user_id=current_user.id).order_by(
-        Income.date.desc()
-    ).paginate(page=page, per_page=10)
-    return render_template('income/list.html', incomes=incomes)
+    date_from = request.args.get('date_from', type=str)
+    date_to = request.args.get('date_to', type=str)
+    category_id = request.args.get('category_id', type=int)
+    amount_min = request.args.get('amount_min', type=float)
+    amount_max = request.args.get('amount_max', type=float)
+    search = request.args.get('search', type=str)
+
+    query = Income.query.filter_by(user_id=current_user.id)
+
+    if date_from:
+        query = query.filter(Income.date >= date.fromisoformat(date_from))
+    if date_to:
+        query = query.filter(Income.date <= date.fromisoformat(date_to))
+    if category_id:
+        query = query.filter_by(category_id=category_id)
+    if amount_min is not None:
+        query = query.filter(Income.amount >= amount_min)
+    if amount_max is not None:
+        query = query.filter(Income.amount <= amount_max)
+    if search:
+        query = query.filter(
+            db.or_(
+                Income.description.ilike(f'%{search}%'),
+                Income.source.ilike(f'%{search}%'),
+            )
+        )
+
+    incomes = query.order_by(Income.date.desc()).paginate(page=page, per_page=10)
+    categories = _get_income_categories()
+    filters = {
+        'date_from': date_from, 'date_to': date_to,
+        'category_id': category_id, 'amount_min': amount_min,
+        'amount_max': amount_max, 'search': search,
+    }
+    return render_template('income/list.html',
+        incomes=incomes, categories=categories, filters=filters)
 
 
 @income_bp.route('/add', methods=['GET', 'POST'])

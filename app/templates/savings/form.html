@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - FinanceTracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <a href="{{ url_for('savings.list') }}" class="btn btn-sm btn-outline-secondary mb-3">
+            <i class="bi bi-arrow-left me-1"></i> Voltar
+        </a>
+        <div class="card border-0">
+            <div class="card-body p-4">
+                <h5 class="mb-4">{{ title }}</h5>
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Ex: Viagem para Europa") }}
+                            {% for error in form.name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.target_amount.label(class="form-label") }}
+                            {{ form.target_amount(class="form-control" + (" is-invalid" if form.target_amount.errors else ""), placeholder="0.00") }}
+                            {% for error in form.target_amount.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.deadline.label(class="form-label") }}
+                            {{ form.deadline(class="form-control" + (" is-invalid" if form.deadline.errors else "")) }}
+                            {% for error in form.deadline.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.icon.label(class="form-label") }}
+                            {{ form.icon(class="form-select") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.color.label(class="form-label") }}
+                            {{ form.color(class="form-control form-control-color", type="color") }}
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="bi bi-check-lg me-1"></i> {{ form.submit.label.text }}
+                            </button>
+                            <a href="{{ url_for('savings.list') }}" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

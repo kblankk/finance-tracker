@@ -15,6 +15,17 @@
                 <form method="POST">
                     {{ form.hidden_tag() }}
 
+                    {% if form.errors %}
+                    <div class="alert alert-danger py-2">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        {% for field, errors in form.errors.items() %}
+                            {% for error in errors %}
+                            <div>{{ error }}</div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
                     <div class="mb-3">
                         {{ form.username.label(class="form-label") }}
                         {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), placeholder="Seu nome de usuario") }}

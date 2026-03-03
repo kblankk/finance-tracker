@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}{{ installment.description }} - FinanceTracker{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('installments.list') }}" class="btn btn-sm btn-outline-secondary mb-3">
+    <i class="bi bi-arrow-left me-1"></i> Voltar
+</a>
+
+<div class="card border-0 mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">{{ installment.description }}</h5>
+            <span class="badge bg-primary">{{ paid_count }}/{{ installment.num_installments }} pagas</span>
+        </div>
+        {% if installment.payee %}
+        <p class="text-muted mb-2">{{ installment.payee }}</p>
+        {% endif %}
+        <div class="row g-3">
+            <div class="col-md-4">
+                <small class="text-muted d-block">Valor Total</small>
+                <strong>R$ {{ "%.2f"|format(installment.total_amount) }}</strong>
+            </div>
+            <div class="col-md-4">
+                <small class="text-muted d-block">Valor por Parcela</small>
+                <strong>R$ {{ "%.2f"|format(installment.total_amount / installment.num_installments) }}</strong>
+            </div>
+            <div class="col-md-4">
+                <small class="text-muted d-block">Inicio</small>
+                <strong>{{ installment.start_date.strftime('%d/%m/%Y') }}</strong>
+            </div>
+        </div>
+        <div class="progress mt-3" style="height: 8px;">
+            <div class="progress-bar {{ 'bg-success' if paid_count == installment.num_installments else 'bg-primary' }}"
+                 style="width: {{ (paid_count / installment.num_installments * 100) if installment.num_installments > 0 else 0 }}%"></div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Parcela</th>
+                        <th>Vencimento</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end">Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <tr>
+                        <td>{{ expense.installment_number }}/{{ installment.num_installments }}</td>
+                        <td>{{ expense.due_date.strftime('%d/%m/%Y') if expense.due_date else '-' }}</td>
+                        <td class="text-center">
+                            <form method="POST" action="{{ url_for('expenses.toggle_paid', id=expense.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                {% if expense.is_paid %}
+                                <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-check-circle"></i> Paga</button>
+                                {% else %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-clock"></i> Pendente</button>
+                                {% endif %}
+                            </form>
+                        </td>
+                        <td class="text-end">R$ {{ "%.2f"|format(expense.amount) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

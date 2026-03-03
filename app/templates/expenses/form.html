@@ -17,9 +17,18 @@
                     {{ form.hidden_tag() }}
 
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">{{ form.amount.label.text }}</label>
-                            {{ form.amount(class="form-control" + (" is-invalid" if form.amount.errors else ""), placeholder="0.00") }}
+                        <div class="col-md-4">
+                            <label class="form-label">Valor Principal (R$)</label>
+                            <input type="number" step="0.01" min="0" id="valor_principal" class="form-control" placeholder="0.00">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Valor Adicional (R$)</label>
+                            <input type="number" step="0.01" min="0" id="valor_adicional" class="form-control" placeholder="0.00">
+                            <small class="text-muted">Opcional (plano, taxa, etc)</small>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Total (R$)</label>
+                            {{ form.amount(class="form-control fw-bold bg-opacity-10" + (" is-invalid" if form.amount.errors else ""), readonly=true, id="amount") }}
                             {% for error in form.amount.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
@@ -86,6 +95,31 @@ const field = document.getElementById('recurrenceField');
 field.style.display = recurring.checked ? 'block' : 'none';
 recurring.addEventListener('change', () => {
     field.style.display = recurring.checked ? 'block' : 'none';
+});
+
+// Auto-soma dos dois campos de valor
+const principal = document.getElementById('valor_principal');
+const adicional = document.getElementById('valor_adicional');
+const total = document.getElementById('amount');
+
+function somarValores() {
+    const v1 = parseFloat(principal.value) || 0;
+    const v2 = parseFloat(adicional.value) || 0;
+    total.value = (v1 + v2).toFixed(2);
+}
+
+principal.addEventListener('input', somarValores);
+adicional.addEventListener('input', somarValores);
+
+// Ao editar, preencher o campo principal com o valor existente
+const valorAtual = parseFloat(total.value);
+if (valorAtual > 0) {
+    principal.value = valorAtual.toFixed(2);
+}
+
+// Remover readonly ao submeter para enviar o valor
+document.querySelector('form').addEventListener('submit', function() {
+    total.removeAttribute('readonly');
 });
 </script>
 {% endblock %}

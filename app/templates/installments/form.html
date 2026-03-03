@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - FinanceTracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <a href="{{ url_for('installments.list') }}" class="btn btn-sm btn-outline-secondary mb-3">
+            <i class="bi bi-arrow-left me-1"></i> Voltar
+        </a>
+        <div class="card border-0">
+            <div class="card-body p-4">
+                <h5 class="mb-4">{{ title }}</h5>
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), placeholder="Ex: TV Samsung 55 polegadas") }}
+                            {% for error in form.description.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.total_amount.label(class="form-label") }}
+                            {{ form.total_amount(class="form-control" + (" is-invalid" if form.total_amount.errors else ""), placeholder="1158.00", id="total_amount") }}
+                            {% for error in form.total_amount.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.num_installments.label(class="form-label") }}
+                            {{ form.num_installments(class="form-control" + (" is-invalid" if form.num_installments.errors else ""), placeholder="3", id="num_installments") }}
+                            {% for error in form.num_installments.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.additional_per_month.label(class="form-label") }}
+                            {{ form.additional_per_month(class="form-control" + (" is-invalid" if form.additional_per_month.errors else ""), placeholder="0.00", id="additional_per_month") }}
+                            <small class="text-muted">Plano, taxa, etc</small>
+                            {% for error in form.additional_per_month.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-12">
+                            <div class="alert alert-info py-2 mb-0" id="resumo_parcela" style="display:none;">
+                                <i class="bi bi-calculator me-1"></i>
+                                <span id="resumo_texto"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.category_id.label(class="form-label") }}
+                            {{ form.category_id(class="form-select" + (" is-invalid" if form.category_id.errors else "")) }}
+                            {% for error in form.category_id.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.start_date.label(class="form-label") }}
+                            {{ form.start_date(class="form-control" + (" is-invalid" if form.start_date.errors else "")) }}
+                            {% for error in form.start_date.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-12">
+                            {{ form.payee.label(class="form-label") }}
+                            {{ form.payee(class="form-control", placeholder="Opcional") }}
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="bi bi-check-lg me-1"></i> {{ form.submit.label.text }}
+                            </button>
+                            <a href="{{ url_for('installments.list') }}" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const totalAmount = document.getElementById('total_amount');
+const numInst = document.getElementById('num_installments');
+const additional = document.getElementById('additional_per_month');
+const resumoDiv = document.getElementById('resumo_parcela');
+const resumoTexto = document.getElementById('resumo_texto');
+
+function calcularResumo() {
+    const total = parseFloat(totalAmount.value) || 0;
+    const parcelas = parseInt(numInst.value) || 0;
+    const adicional = parseFloat(additional.value) || 0;
+
+    if (total > 0 && parcelas > 0) {
+        const valorParcela = total / parcelas;
+        const valorMensal = valorParcela + adicional;
+        let texto = parcelas + 'x de R$ ' + valorParcela.toFixed(2);
+        if (adicional > 0) {
+            texto += ' + R$ ' + adicional.toFixed(2) + ' adicional = <strong>R$ ' + valorMensal.toFixed(2) + '/mes</strong>';
+        } else {
+            texto += ' = <strong>R$ ' + valorParcela.toFixed(2) + '/mes</strong>';
+        }
+        resumoTexto.innerHTML = texto;
+        resumoDiv.style.display = 'block';
+    } else {
+        resumoDiv.style.display = 'none';
+    }
+}
+
+totalAmount.addEventListener('input', calcularResumo);
+numInst.addEventListener('input', calcularResumo);
+additional.addEventListener('input', calcularResumo);
+calcularResumo();
+</script>
+{% endblock %}

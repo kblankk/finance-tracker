@@ -2,13 +2,15 @@ from datetime import date, timedelta
 from decimal import Decimal
 from flask import render_template, jsonify, request
 from flask_login import login_required, current_user
-from sqlalchemy import func, extract
+from sqlalchemy import func, extract, and_, or_
 from app.main import main_bp
 from app.extensions import db
 from app.models.income import Income
 from app.models.expense import Expense
 from app.models.category import Category
 from app.models.reminder import Reminder
+from app.models.budget import Budget
+from app.models.savings_goal import SavingsGoal
 
 
 @main_bp.route('/')
@@ -17,34 +19,62 @@ from app.models.reminder import Reminder
 def dashboard():
     today = date.today()
     first_day = today.replace(day=1)
+    # Ultimo dia do mes
+    if today.month == 12:
+        last_day = today.replace(day=31)
+    else:
+        last_day = today.replace(month=today.month + 1, day=1) - timedelta(days=1)
 
-    # Summary cards
+    # Summary cards - mes inteiro (receitas e despesas planejadas)
     total_income = db.session.query(func.sum(Income.amount)).filter(
         Income.user_id == current_user.id,
         Income.date >= first_day,
-        Income.date <= today,
+        Income.date <= last_day,
     ).scalar() or Decimal('0')
 
     total_expenses = db.session.query(func.sum(Expense.amount)).filter(
         Expense.user_id == current_user.id,
         Expense.due_date >= first_day,
-        Expense.due_date <= today,
+        Expense.due_date <= last_day,
     ).scalar() or Decimal('0')
 
-    pending_bills = Expense.query.filter(
+    # Subquery: proxima parcela nao paga de cada parcelamento
+    next_inst_sq = db.session.query(
+        Expense.installment_id,
+        func.min(Expense.installment_number).label('next_num')
+    ).filter(
+        Expense.user_id == current_user.id,
+        Expense.installment_id.isnot(None),
+        Expense.is_paid == False,
+    ).group_by(Expense.installment_id).subquery()
+
+    pending_bills = db.session.query(func.count(Expense.id)).outerjoin(
+        next_inst_sq,
+        Expense.installment_id == next_inst_sq.c.installment_id
+    ).filter(
         Expense.user_id == current_user.id,
         Expense.is_paid == False,
-        Expense.due_date >= today,
-    ).count()
+        or_(
+            Expense.installment_id.is_(None),
+            Expense.installment_number == next_inst_sq.c.next_num,
+        )
+    ).scalar()
 
     balance = total_income - total_expenses
 
-    # Upcoming bills (next 7 days)
-    upcoming = Expense.query.filter(
+    # Upcoming bills (next 30 days, only next installment per group)
+    upcoming = db.session.query(Expense).outerjoin(
+        next_inst_sq,
+        Expense.installment_id == next_inst_sq.c.installment_id
+    ).filter(
         Expense.user_id == current_user.id,
         Expense.is_paid == False,
         Expense.due_date >= today,
-        Expense.due_date <= today + timedelta(days=7),
+        Expense.due_date <= today + timedelta(days=30),
+        or_(
+            Expense.installment_id.is_(None),
+            Expense.installment_number == next_inst_sq.c.next_num,
+        )
     ).order_by(Expense.due_date).limit(5).all()
 
     # Recent transactions
@@ -53,6 +83,33 @@ def dashboard():
 
     # Unread reminders count
     unread_count = Reminder.query.filter_by(user_id=current_user.id, is_read=False).count()
+
+    # Budget alerts for current month
+    budgets = Budget.query.filter_by(
+        user_id=current_user.id, month=today.month, year=today.year
+    ).all()
+    budget_alerts = []
+    for b in budgets:
+        spent = db.session.query(func.sum(Expense.amount)).filter(
+            Expense.user_id == current_user.id,
+            Expense.category_id == b.category_id,
+            extract('month', Expense.due_date) == today.month,
+            extract('year', Expense.due_date) == today.year,
+        ).scalar() or Decimal('0')
+        pct = min(float(spent / b.amount_limit) * 100, 100) if b.amount_limit > 0 else 0
+        budget_alerts.append({
+            'category': b.category.name,
+            'color': b.category.color or '#6c757d',
+            'limit': b.amount_limit,
+            'spent': spent,
+            'pct': pct,
+            'over': spent > b.amount_limit,
+        })
+
+    # Savings goals (top 3 active)
+    savings_goals = SavingsGoal.query.filter_by(
+        user_id=current_user.id, is_completed=False
+    ).order_by(SavingsGoal.created_at.desc()).limit(3).all()
 
     return render_template('main/dashboard.html',
         total_income=total_income,
@@ -63,6 +120,8 @@ def dashboard():
         recent_incomes=recent_incomes,
         recent_expenses=recent_expenses,
         unread_count=unread_count,
+        budget_alerts=budget_alerts,
+        savings_goals=savings_goals,
     )
 
 

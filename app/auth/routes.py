@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash, request
+from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from app.auth import auth_bp
 from app.auth.forms import LoginForm, RegisterForm
@@ -59,3 +59,10 @@ def pending_approval():
     if current_user.is_approved:
         return redirect(url_for('main.dashboard'))
     return render_template('auth/pending.html')
+
+
+@auth_bp.route('/check-approved')
+@login_required
+def check_approved():
+    db.session.refresh(current_user)
+    return jsonify({'approved': current_user.is_approved})

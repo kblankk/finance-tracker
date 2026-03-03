@@ -12,18 +12,44 @@
 <body>
     {% if current_user.is_authenticated and current_user.is_approved %}
     <div class="d-flex">
+        <!-- Backdrop mobile -->
+        <div class="sidebar-backdrop d-md-none" id="sidebarBackdrop"></div>
         {% include 'components/_sidebar.html' %}
         <div class="flex-grow-1 d-flex flex-column min-vh-100">
             {% include 'components/_navbar.html' %}
-            <main class="container-fluid p-4 flex-grow-1">
+            <main class="container-fluid p-3 p-md-4 flex-grow-1 pb-mobile">
                 {% include 'components/_flash.html' %}
                 {% block content %}{% endblock %}
             </main>
-            <footer class="text-center text-muted py-3 border-top border-secondary">
+            <footer class="text-center text-muted py-3 border-top border-secondary d-none d-md-block">
                 <small>FinanceTracker &copy; 2026 - Todos os direitos reservados</small>
             </footer>
         </div>
     </div>
+
+    <!-- Bottom nav mobile -->
+    <nav class="bottom-nav d-md-none">
+        <a href="{{ url_for('main.dashboard') }}" class="bottom-nav-item {{ 'active' if request.endpoint == 'main.dashboard' }}">
+            <i class="bi bi-speedometer2"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="{{ url_for('income.list') }}" class="bottom-nav-item {{ 'active' if request.endpoint and 'income' in request.endpoint }}">
+            <i class="bi bi-arrow-up-circle"></i>
+            <span>Receitas</span>
+        </a>
+        <a href="{{ url_for('expenses.list') }}" class="bottom-nav-item {{ 'active' if request.endpoint and 'expenses' in request.endpoint }}">
+            <i class="bi bi-arrow-down-circle"></i>
+            <span>Despesas</span>
+        </a>
+        <a href="{{ url_for('installments.list') }}" class="bottom-nav-item {{ 'active' if request.endpoint and 'installments' in request.endpoint }}">
+            <i class="bi bi-credit-card-2-front"></i>
+            <span>Parcelas</span>
+        </a>
+        <button class="bottom-nav-item" id="mobileMenuBtn">
+            <i class="bi bi-list"></i>
+            <span>Menu</span>
+        </button>
+    </nav>
     {% else %}
     <div class="min-vh-100 d-flex align-items-center justify-content-center">
         <div class="container">

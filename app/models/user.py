@@ -19,6 +19,9 @@ class User(db.Model, UserMixin):
     expenses = db.relationship('Expense', backref='owner', lazy='dynamic', cascade='all, delete-orphan')
     categories = db.relationship('Category', backref='owner', lazy='dynamic', cascade='all, delete-orphan')
     reminders = db.relationship('Reminder', backref='owner', lazy='dynamic', cascade='all, delete-orphan')
+    budgets = db.relationship('Budget', backref='owner', lazy='dynamic', cascade='all, delete-orphan')
+    savings_goals = db.relationship('SavingsGoal', backref='owner', lazy='dynamic', cascade='all, delete-orphan')
+    installments = db.relationship('Installment', backref='owner', lazy='dynamic', cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')

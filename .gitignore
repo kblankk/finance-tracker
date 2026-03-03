@@ -10,3 +10,7 @@ dist/
 build/
 .eggs/
 migrations/versions/__pycache__/
+.claude/
+/logs/
+/reports/
+/runs/

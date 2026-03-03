@@ -21,6 +21,10 @@ def create_app(config_class='config.DevelopmentConfig'):
     from app.expenses import expenses_bp
     from app.admin import admin_bp
     from app.reminders import reminders_bp
+    from app.installments import installments_bp
+    from app.reports import reports_bp
+    from app.budgets import budgets_bp
+    from app.savings import savings_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -28,12 +32,16 @@ def create_app(config_class='config.DevelopmentConfig'):
     app.register_blueprint(expenses_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(reminders_bp)
+    app.register_blueprint(installments_bp)
+    app.register_blueprint(reports_bp)
+    app.register_blueprint(budgets_bp)
+    app.register_blueprint(savings_bp)
 
     # Redirect unapproved users
     @app.before_request
     def check_user_approved():
         if current_user.is_authenticated and not current_user.is_approved:
-            allowed = ('auth.logout', 'auth.pending_approval', 'static')
+            allowed = ('auth.logout', 'auth.pending_approval', 'auth.check_approved', 'static')
             if request.endpoint not in allowed:
                 return redirect(url_for('auth.pending_approval'))
 

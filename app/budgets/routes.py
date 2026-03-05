@@ -109,6 +109,32 @@ def delete(id):
     return redirect(url_for('budgets.list'))
 
 
+@budgets_bp.route('/spend/<int:id>', methods=['POST'])
+@login_required
+def spend(id):
+    budget = Budget.query.filter_by(id=id, user_id=current_user.id).first_or_404()
+    amount = request.form.get('amount', type=float)
+    description = request.form.get('description', '').strip()
+
+    if not amount or amount <= 0:
+        flash('Informe um valor valido.', 'warning')
+        return redirect(url_for('budgets.list', month=budget.month, year=budget.year))
+
+    expense = Expense(
+        user_id=current_user.id,
+        category_id=budget.category_id,
+        amount=amount,
+        description=description or None,
+        due_date=date.today(),
+        is_paid=True,
+        priority='normal',
+    )
+    db.session.add(expense)
+    db.session.commit()
+    flash(f'Gasto de R$ {amount:.2f} registrado!', 'success')
+    return redirect(url_for('budgets.list', month=budget.month, year=budget.year))
+
+
 def _get_expense_categories():
     cats = Category.query.filter(
         Category.type == 'expense',

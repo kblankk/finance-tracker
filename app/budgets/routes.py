@@ -31,9 +31,11 @@ def list():
             extract('year', Expense.due_date) == year,
         ).scalar() or Decimal('0')
         pct = min(float(spent / b.amount_limit) * 100, 100) if b.amount_limit > 0 else 0
+        available = b.amount_limit - spent
         budget_data.append({
             'budget': b,
             'spent': spent,
+            'available': available,
             'pct': pct,
             'over': spent > b.amount_limit,
         })

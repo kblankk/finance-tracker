@@ -29,6 +29,11 @@
             </a>
         </li>
         <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.endpoint and 'budgets' in request.endpoint }}" href="{{ url_for('budgets.list') }}">
+                <i class="bi bi-wallet2 me-2"></i> Orcamento
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link {{ 'active' if request.endpoint and 'installments' in request.endpoint }}" href="{{ url_for('installments.list') }}">
                 <i class="bi bi-credit-card-2-front me-2"></i> Parcelas
             </a>

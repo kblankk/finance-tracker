@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Orcamento - FinanceTracker{% endblock %}
+{% block title %}Orçamento - FinanceTracker{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -13,7 +13,7 @@
 
 <!-- Month selector -->
 <div class="mb-4 d-flex align-items-center gap-2">
-    {% set months = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'] %}
+    {% set months = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'] %}
     <a href="?month={{ month - 1 if month > 1 else 12 }}&year={{ year if month > 1 else year - 1 }}" class="btn btn-sm btn-outline-secondary">
         <i class="bi bi-chevron-left"></i>
     </a>
@@ -35,7 +35,7 @@
                     </span>
                     <div class="d-flex gap-1">
                         <a href="{{ url_for('budgets.edit', id=item.budget.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
-                        <form method="POST" action="{{ url_for('budgets.delete', id=item.budget.id) }}" class="d-inline" onsubmit="return confirm('Remover este orcamento?')">
+                        <form method="POST" action="{{ url_for('budgets.delete', id=item.budget.id) }}" class="d-inline" onsubmit="return confirm('Remover este orçamento?')">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                         </form>
@@ -48,7 +48,7 @@
                     <p class="text-muted mb-1 small">Estourado em</p>
                     <h3 class="text-danger mb-0">R$ {{ "%.2f"|format(item.available|abs) }}</h3>
                     {% else %}
-                    <p class="text-muted mb-1 small">Disponivel</p>
+                    <p class="text-muted mb-1 small">Disponível</p>
                     <h3 class="{{ 'text-success' if item.pct < 75 else 'text-warning' }} mb-0">R$ {{ "%.2f"|format(item.available) }}</h3>
                     {% endif %}
                 </div>
@@ -78,7 +78,7 @@
                         <input type="number" name="amount" class="form-control" placeholder="0.00" step="0.01" min="0.01" required>
                     </div>
                     <div class="input-group input-group-sm">
-                        <input type="text" name="description" class="form-control" placeholder="Descricao (opcional)">
+                        <input type="text" name="description" class="form-control" placeholder="Descrição (opcional)">
                         <button type="submit" class="btn btn-outline-success" title="Registrar gasto">
                             <i class="bi bi-plus-lg"></i>
                         </button>
@@ -93,7 +93,7 @@
 <div class="card border-0">
     <div class="card-body text-center text-muted py-5">
         <i class="bi bi-wallet2 display-4"></i>
-        <p class="mt-2">Nenhum limite definido para este mes.</p>
+        <p class="mt-2">Nenhum limite definido para este mês.</p>
         <p class="small">Defina quanto pode gastar por categoria para controlar seus gastos.</p>
         <a href="{{ url_for('budgets.add') }}" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-lg me-1"></i> Definir Limite

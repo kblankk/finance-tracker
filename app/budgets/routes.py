@@ -62,8 +62,8 @@ def add():
             year=form.year.data,
         ).first()
         if existing:
-            flash('Ja existe um orcamento para esta categoria neste mes.', 'warning')
-            return render_template('budgets/form.html', form=form, title='Novo Orcamento')
+            flash('Já existe um orçamento para esta categoria neste mês.', 'warning')
+            return render_template('budgets/form.html', form=form, title='Novo Orçamento')
 
         budget = Budget(
             user_id=current_user.id,
@@ -74,10 +74,10 @@ def add():
         )
         db.session.add(budget)
         db.session.commit()
-        flash('Orcamento criado com sucesso!', 'success')
+        flash('Orçamento criado com sucesso!', 'success')
         return redirect(url_for('budgets.list'))
 
-    return render_template('budgets/form.html', form=form, title='Novo Orcamento')
+    return render_template('budgets/form.html', form=form, title='Novo Orçamento')
 
 
 @budgets_bp.route('/edit/<int:id>', methods=['GET', 'POST'])
@@ -93,10 +93,10 @@ def edit(id):
         budget.month = form.month.data
         budget.year = form.year.data
         db.session.commit()
-        flash('Orcamento atualizado!', 'success')
+        flash('Orçamento atualizado!', 'success')
         return redirect(url_for('budgets.list'))
 
-    return render_template('budgets/form.html', form=form, title='Editar Orcamento')
+    return render_template('budgets/form.html', form=form, title='Editar Orçamento')
 
 
 @budgets_bp.route('/delete/<int:id>', methods=['POST'])
@@ -105,7 +105,7 @@ def delete(id):
     budget = Budget.query.filter_by(id=id, user_id=current_user.id).first_or_404()
     db.session.delete(budget)
     db.session.commit()
-    flash('Orcamento removido.', 'success')
+    flash('Orçamento removido.', 'success')
     return redirect(url_for('budgets.list'))
 
 
@@ -117,7 +117,7 @@ def spend(id):
     description = request.form.get('description', '').strip()
 
     if not amount or amount <= 0:
-        flash('Informe um valor valido.', 'warning')
+        flash('Informe um valor válido.', 'warning')
         return redirect(url_for('budgets.list', month=budget.month, year=budget.year))
 
     expense = Expense(

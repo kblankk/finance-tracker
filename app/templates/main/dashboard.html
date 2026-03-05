@@ -9,16 +9,13 @@
 
 <!-- Summary Cards -->
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
+    <div class="col-4">
         <div class="card stat-card h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <p class="text-muted mb-1 small">Receitas</p>
-                        <h4 class="text-income mb-0">R$ {{ "%.2f"|format(total_income - total_savings) }}</h4>
-                        {% if total_savings > 0 %}
-                        <small class="text-primary"><i class="bi bi-piggy-bank me-1"></i>-R$ {{ "%.2f"|format(total_savings) }} em metas</small>
-                        {% endif %}
+                        <h4 class="text-income mb-0">R$ {{ "%.2f"|format(total_income) }}</h4>
                     </div>
                     <div class="stat-icon bg-success bg-opacity-10 text-success">
                         <i class="bi bi-arrow-up-circle"></i>
@@ -27,7 +24,7 @@
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-4">
         <div class="card stat-card h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
@@ -42,7 +39,7 @@
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-4">
         <div class="card stat-card h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
@@ -54,21 +51,6 @@
                     </div>
                     <div class="stat-icon bg-primary bg-opacity-10 text-primary">
                         <i class="bi bi-wallet2"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card stat-card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted mb-1 small">Metas</p>
-                        <h4 class="text-primary mb-0">R$ {{ "%.2f"|format(total_savings) }}</h4>
-                    </div>
-                    <div class="stat-icon bg-primary bg-opacity-10 text-primary">
-                        <i class="bi bi-piggy-bank"></i>
                     </div>
                 </div>
             </div>

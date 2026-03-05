@@ -40,7 +40,7 @@ def seed():
         if not admin:
             admin = User(
                 username='admin',
-                email='admin@financetracker.com',
+                email='kawabrein@gmail.com',
                 role='admin',
                 is_approved=True,
             )

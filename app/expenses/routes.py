@@ -103,7 +103,7 @@ def add():
         db.session.add(expense)
         db.session.commit()
         flash('Despesa adicionada com sucesso!', 'success')
-        return redirect(url_for('expenses.list'))
+        return redirect(url_for('transactions.list'))
 
     return render_template('expenses/form.html', form=form, title='Nova Despesa')
 
@@ -126,9 +126,14 @@ def edit(id):
         expense.is_recurring = form.is_recurring.data
         expense.recurrence = form.recurrence.data if form.is_recurring.data else None
         expense.priority = form.priority.data
+        # Sync category to installment and sibling expenses
+        if expense.installment_id and expense.installment:
+            expense.installment.category_id = form.category_id.data
+            for sibling in expense.installment.expenses:
+                sibling.category_id = form.category_id.data
         db.session.commit()
         flash('Despesa atualizada!', 'success')
-        return redirect(url_for('expenses.list'))
+        return redirect(url_for('transactions.list'))
 
     return render_template('expenses/form.html', form=form, title='Editar Despesa')
 
@@ -140,7 +145,7 @@ def delete(id):
     db.session.delete(expense)
     db.session.commit()
     flash('Despesa removida.', 'success')
-    return redirect(url_for('expenses.list'))
+    return redirect(request.referrer or url_for('transactions.list'))
 
 
 @expenses_bp.route('/toggle-paid/<int:id>', methods=['POST'])
@@ -152,7 +157,7 @@ def toggle_paid(id):
     db.session.commit()
     status = 'paga' if expense.is_paid else 'pendente'
     flash(f'Conta marcada como {status}.', 'success')
-    return redirect(url_for('expenses.list'))
+    return redirect(request.referrer or url_for('transactions.list'))
 
 
 @expenses_bp.route('/export-csv')

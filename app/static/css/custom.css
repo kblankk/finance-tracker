@@ -386,7 +386,7 @@
 .privacy-mode .text-success.fw-medium,
 .privacy-mode .text-danger.fw-medium,
 .privacy-mode .text-warning.fw-medium,
-.privacy-mode .badge.bg-danger:not(.ms-1),
+.privacy-mode .list-group-item .badge.bg-danger,
 .privacy-mode td.text-end.fw-medium,
 .privacy-mode .progress-bar,
 .privacy-mode #comparisonCards .fw-bold,

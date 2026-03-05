@@ -72,7 +72,7 @@ def add():
         db.session.add(income)
         db.session.commit()
         flash('Receita adicionada com sucesso!', 'success')
-        return redirect(url_for('income.list'))
+        return redirect(url_for('transactions.list'))
 
     return render_template('income/form.html', form=form, title='Nova Receita')
 
@@ -94,7 +94,7 @@ def edit(id):
         income.recurrence = form.recurrence.data if form.is_recurring.data else None
         db.session.commit()
         flash('Receita atualizada!', 'success')
-        return redirect(url_for('income.list'))
+        return redirect(url_for('transactions.list'))
 
     return render_template('income/form.html', form=form, title='Editar Receita')
 
@@ -117,7 +117,7 @@ def delete(id):
     db.session.delete(income)
     db.session.commit()
     flash('Receita removida.', 'success')
-    return redirect(url_for('income.list'))
+    return redirect(request.referrer or url_for('transactions.list'))
 
 
 @income_bp.route('/export-csv')

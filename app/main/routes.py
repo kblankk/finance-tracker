@@ -82,7 +82,7 @@ def dashboard():
 
     total_savings = savings_deposits - savings_withdrawals
 
-    balance = total_income - total_expenses
+    balance = total_income - total_expenses - total_savings
 
     # Upcoming bills (next 30 days, only next installment per group)
     upcoming = db.session.query(Expense).outerjoin(

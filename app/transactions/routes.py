@@ -7,6 +7,8 @@ from app.extensions import db
 from app.models.income import Income
 from app.models.expense import Expense
 from app.models.category import Category
+from app.models.savings_goal import SavingsGoal
+from app.models.savings_contribution import SavingsContribution
 
 
 @transactions_bp.route('/lancamentos')
@@ -96,6 +98,43 @@ def list():
                 'amount': float(exp.amount),
                 'is_paid': exp.is_paid,
                 'installment_info': inst_info,
+            })
+
+    # Metas (depósitos e saques)
+    if filter_type in ('all', 'savings'):
+        q = SavingsContribution.query.join(SavingsGoal).filter(
+            SavingsGoal.user_id == current_user.id
+        )
+        if date_from:
+            q = q.filter(SavingsContribution.date >= date.fromisoformat(date_from))
+        if date_to:
+            q = q.filter(SavingsContribution.date <= date.fromisoformat(date_to))
+        if amount_min is not None:
+            q = q.filter(SavingsContribution.amount >= amount_min)
+        if amount_max is not None:
+            q = q.filter(SavingsContribution.amount <= amount_max)
+        if search:
+            q = q.filter(db.or_(
+                SavingsContribution.description.ilike(f'%{search}%'),
+                SavingsGoal.name.ilike(f'%{search}%'),
+            ))
+        for sc in q.all():
+            is_deposit = sc.type != 'withdrawal'
+            items.append({
+                'type': 'savings',
+                'id': sc.id,
+                'date': sc.date,
+                'description': sc.description or sc.goal.name,
+                'category': None,
+                'goal_name': sc.goal.name,
+                'goal_color': sc.goal.color or '#0d6efd',
+                'goal_icon': sc.goal.icon or 'bi bi-piggy-bank',
+                'detail': 'Depósito' if is_deposit else 'Saque',
+                'amount': float(sc.amount),
+                'is_deposit': is_deposit,
+                'is_paid': None,
+                'is_received': None,
+                'installment_info': None,
             })
 
     # Ordenar por data decrescente

@@ -20,6 +20,7 @@
         <a href="?type=all" class="btn {{ 'btn-primary' if filters.type == 'all' else 'btn-outline-secondary' }}">Todos</a>
         <a href="?type=income" class="btn {{ 'btn-success' if filters.type == 'income' else 'btn-outline-secondary' }}">Receitas</a>
         <a href="?type=expense" class="btn {{ 'btn-danger' if filters.type == 'expense' else 'btn-outline-secondary' }}">Despesas</a>
+        <a href="?type=savings" class="btn {{ 'btn-info' if filters.type == 'savings' else 'btn-outline-secondary' }}">Metas</a>
     </div>
 </div>
 
@@ -81,6 +82,8 @@
                     <div class="d-flex align-items-center gap-2 mb-1">
                         {% if item.type == 'income' %}
                         <i class="bi bi-arrow-up-circle text-success"></i>
+                        {% elif item.type == 'savings' %}
+                        <i class="bi bi-piggy-bank text-primary"></i>
                         {% else %}
                         <i class="bi bi-arrow-down-circle text-danger"></i>
                         {% endif %}
@@ -88,7 +91,12 @@
                     </div>
                     <div class="d-flex flex-wrap align-items-center gap-1">
                         <small class="text-muted">{{ item.date.strftime('%d/%m/%Y') if item.date else '-' }}</small>
-                        {% if item.category %}
+                        {% if item.type == 'savings' %}
+                        <span class="badge" style="background-color: {{ item.goal_color }}; font-size: 0.65rem;">
+                            <i class="{{ item.goal_icon }} me-1"></i>{{ item.goal_name }}
+                        </span>
+                        <span class="badge bg-primary bg-opacity-10 text-primary" style="font-size: 0.65rem;">{{ item.detail }}</span>
+                        {% elif item.category %}
                         <span class="badge" style="background-color: {{ item.category.color or '#6c757d' }}; font-size: 0.65rem;">
                             {{ item.category.name }}
                         </span>
@@ -110,12 +118,14 @@
                         {% endif %}
                     </div>
                 </div>
-                <span class="fw-medium text-nowrap {{ 'text-success' if item.type == 'income' else 'text-danger' }}">
-                    {{ '+' if item.type == 'income' else '-' }}R$ {{ "%.2f"|format(item.amount) }}
+                <span class="fw-medium text-nowrap {{ 'text-success' if item.type == 'income' else ('text-primary' if item.type == 'savings' else 'text-danger') }}">
+                    {% if item.type == 'savings' %}{{ '+' if not item.is_deposit else '-' }}{% else %}{{ '+' if item.type == 'income' else '-' }}{% endif %}R$ {{ "%.2f"|format(item.amount) }}
                 </span>
             </div>
             <div class="d-flex justify-content-end gap-1 mt-2">
-                {% if item.type == 'income' %}
+                {% if item.type == 'savings' %}
+                <a href="{{ url_for('savings.list') }}" class="btn btn-sm btn-outline-primary" title="Ver meta"><i class="bi bi-piggy-bank"></i></a>
+                {% elif item.type == 'income' %}
                     {% if not item.is_received %}
                     <form method="POST" action="{{ url_for('income.toggle_received', id=item.id) }}" class="d-inline">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -185,6 +195,8 @@
                         <td>
                             {% if item.type == 'income' %}
                             <span class="badge bg-success"><i class="bi bi-arrow-up-circle me-1"></i>Receita</span>
+                            {% elif item.type == 'savings' %}
+                            <span class="badge bg-primary"><i class="bi bi-piggy-bank me-1"></i>{{ item.detail }}</span>
                             {% else %}
                             <span class="badge bg-danger"><i class="bi bi-arrow-down-circle me-1"></i>Despesa</span>
                             {% endif %}
@@ -208,17 +220,25 @@
                             {% endif %}
                         </td>
                         <td>
-                            {% if item.category %}
+                            {% if item.type == 'savings' %}
+                            <span class="badge" style="background-color: {{ item.goal_color }}">
+                                <i class="{{ item.goal_icon }} me-1"></i>{{ item.goal_name }}
+                            </span>
+                            {% elif item.category %}
                             <span class="badge" style="background-color: {{ item.category.color or '#6c757d' }}">
                                 <i class="{{ item.category.icon or 'bi bi-tag' }} me-1"></i>{{ item.category.name }}
                             </span>
                             {% endif %}
                         </td>
-                        <td class="text-end fw-medium {{ 'text-success' if item.type == 'income' else 'text-danger' }}">
-                            {{ '+' if item.type == 'income' else '-' }}R$ {{ "%.2f"|format(item.amount) }}
+                        <td class="text-end fw-medium {{ 'text-success' if item.type == 'income' else ('text-primary' if item.type == 'savings' else 'text-danger') }}">
+                            {% if item.type == 'savings' %}{{ '+' if not item.is_deposit else '-' }}{% else %}{{ '+' if item.type == 'income' else '-' }}{% endif %}R$ {{ "%.2f"|format(item.amount) }}
                         </td>
                         <td class="text-center text-nowrap">
-                            {% if item.type == 'income' %}
+                            {% if item.type == 'savings' %}
+                            <a href="{{ url_for('savings.list') }}" class="btn btn-sm btn-outline-primary" title="Ver meta">
+                                <i class="bi bi-piggy-bank"></i>
+                            </a>
+                            {% elif item.type == 'income' %}
                             {% if not item.is_received %}
                             <form method="POST" action="{{ url_for('income.toggle_received', id=item.id) }}" class="d-inline">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
